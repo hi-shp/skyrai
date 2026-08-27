@@ -97,6 +97,8 @@ class SkyRaiHandler(http.server.SimpleHTTPRequestHandler):
                 "client_id": CLIENT_ID,
                 "status": "live"
             }
+            self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))
+            return
         elif self.path == '/' or self.path == '/index.html':
             self.path = '/skyrai.html'
         
