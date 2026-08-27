@@ -195,11 +195,86 @@
             flex: 1.5;
             position: relative;
             min-width: 0;
+            perspective: 1100px;
+            overflow: hidden;
         }
 
         #map {
             width: 100%;
             height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        #map .leaflet-map-pane {
+            transform-origin: 50% 50%;
+            will-change: transform;
+        }
+
+        /* 3D Tilt Floating Quick Bar */
+        .map-3d-controls {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 850;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 4px 10px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            user-select: none;
+        }
+
+        .map-3d-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 4px 9px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .map-3d-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--cyan);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        .map-3d-btn.active {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--green);
+            border-color: var(--green);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .tilt-badge {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--cyan);
+            padding: 2px 6px;
+            background: rgba(6, 182, 212, 0.12);
+            border-radius: 10px;
+            border: 1px solid rgba(6, 182, 212, 0.25);
+        }
+
+        .tilt-hint {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-left: 2px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
         }
 
         .leaflet-container {
