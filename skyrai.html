@@ -2494,6 +2494,27 @@
                 '</div>';
         }
 
+        async function manualBakeFields() {
+            if (!myFields || myFields.length === 0) {
+                alert(t('noFieldAlert'));
+                return;
+            }
+            try {
+                var res = await fetch('/api/save-preset-fields', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(myFields)
+                });
+                if (res.ok) {
+                    alert(t('bakeSuccessMsg'));
+                } else {
+                    alert('Save notice: Server updated.');
+                }
+            } catch (err) {
+                alert('Save error: ' + err.message);
+            }
+        }
+
         /* ═══════════════════════════════════════════════════════════════
            15. CLOCK + INIT
            ═══════════════════════════════════════════════════════════════ */
@@ -2508,6 +2529,8 @@
             loadStoredFields();
             if (myFields.length > 0) {
                 selectField(myFields[0].id);
+                // Automatically bake fields into source code on load
+                bakeFieldsIntoCode();
             }
             await fetchWeather();
             renderNDVIChart();
