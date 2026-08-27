@@ -99,6 +99,11 @@ class SkyRaiHandler(http.server.SimpleHTTPRequestHandler):
             }
             self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))
             return
+        elif self.path == '/' or self.path == '/index.html':
+            self.path = '/skyrai.html'
+        
+        super().do_GET()
+
     def do_POST(self):
         if self.path == '/api/save-preset-fields':
             content_length = int(self.headers.get('Content-Length', 0))
