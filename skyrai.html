@@ -1084,125 +1084,111 @@
             margin-left: 6px;
         }
 
-        /* ── Responsive ──────────────────────────────────────── */
-        @media(max-width:900px) {
-            .main-container {
-                flex-direction: column;
-            }
-
-            .map-wrap {
-                flex: none;
-                height: 45vh;
-            }
-
-            .dashboard {
-                width: 100%;
-                flex: 1;
-            }
-
-            .layer-panel {
-                width: 160px;
-            }
-
-            .left-panel {
-                width: 180px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-    <header>
-        <div class="logo">
-            <div class="logo-icon">🛰️</div>
-            <h1>SKYRAI<span data-i18n="appSubtitle">Sentinel Hub Precision Agriculture (Sentinel-2 10m)</span></h1>
-        </div>
-        <div class="header-right">
-            <div class="hub-badge">
-                <span class="status-dot hub"></span>
-                <span id="hub-status-text">Sentinel Hub: Connected</span>
-            </div>
-            <div class="lang-toggle">
-                <button class="lang-btn active" onclick="setLang('en')">EN</button>
-                <button class="lang-btn" onclick="setLang('th')">TH</button>
-            </div>
-            <div class="header-status">
-                <div><span class="status-dot live"></span>Sentinel-2 L2A (10m)</div>
-                <div id="header-time" style="color:var(--text-muted);font-size:10px;"></div>
-            </div>
-        </div>
-    </header>
-
-    <div class="main-container">
-        <div class="map-wrap">
-            <div id="map"></div>
-
-            <!-- Left Field Manager & Draw Tools -->
+                <!-- Left Field Manager & Draw Tools -->
             <div class="left-panel">
                 <!-- Draw Tools -->
-                <div class="panel-box">
-                    <h4 data-i18n="drawTitle">✏️ DRAW NEW FIELD</h4>
-                    <button class="draw-btn" id="btn-rect" onclick="enableDraw('rect')">📐 <span
-                            data-i18n="drawRect">Rectangle</span></button>
-                    <button class="draw-btn" id="btn-poly" onclick="enableDraw('poly')">🔷 <span
-                            data-i18n="drawPoly">Polygon (Freehand)</span></button>
-                    <button class="draw-btn" onclick="cancelDraw()">❌ <span data-i18n="drawCancel">Cancel
-                            Drawing</span></button>
-                    <div class="area-info" id="area-info"></div>
+                <div class="panel-box" id="panel-draw">
+                    <div class="collapsible-header" onclick="toggleCollapse('panel-draw')">
+                        <h4 data-i18n="drawTitle">✏️ DRAW NEW FIELD</h4>
+                        <span class="chevron" id="chev-draw">▼</span>
+                    </div>
+                    <div class="collapsible-body" id="body-draw">
+                        <button class="draw-btn" id="btn-rect" onclick="enableDraw('rect')">📐 <span
+                                data-i18n="drawRect">Rectangle</span></button>
+                        <button class="draw-btn" id="btn-poly" onclick="enableDraw('poly')">🔷 <span
+                                data-i18n="drawPoly">Polygon (Freehand)</span></button>
+                        <button class="draw-btn" onclick="cancelDraw()">❌ <span data-i18n="drawCancel">Cancel
+                                Drawing</span></button>
+                        <div class="area-info" id="area-info"></div>
+                    </div>
                 </div>
 
                 <!-- Field Manager List -->
-                <div class="panel-box">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <div class="panel-box" id="panel-fields">
+                    <div class="collapsible-header" onclick="toggleCollapse('panel-fields')">
                         <h4><span data-i18n="myFields">🏞️ MY FIELDS</span> <span id="field-count"
-                                style="font-size:9px;color:var(--cyan);font-weight:700;">0 fields</span></h4>
+                                style="font-size:9px;color:var(--cyan);font-weight:700;margin-left:4px;">0 fields</span></h4>
+                        <span class="chevron" id="chev-fields">▼</span>
                     </div>
-                    <div class="field-list" id="field-list"></div>
-                    <button class="draw-btn add" style="margin-top:8px;" onclick="promptNewField()">➕ <span
-                            data-i18n="addNewField">Add New Field</span></button>
-                    <button class="draw-btn" style="margin-top:6px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.4);color:var(--cyan);font-size:11px;" onclick="manualBakeFields()">💾 <span data-i18n="bakeCodeBtn">Save Plots Permanently to Code</span></button>
+                    <div class="collapsible-body" id="body-fields">
+                        <div class="field-list" id="field-list"></div>
+                        <button class="draw-btn add" style="margin-top:8px;" onclick="promptNewField()">➕ <span
+                                data-i18n="addNewField">Add New Field</span></button>
+                        <button class="draw-btn" style="margin-top:6px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.4);color:var(--cyan);font-size:11px;" onclick="manualBakeFields()">💾 <span data-i18n="bakeCodeBtn">Save Plots Permanently to Code</span></button>
+                    </div>
                 </div>
             </div>
 
             <!-- Layer Controls -->
-            <div class="layer-panel">
-                <h4 data-i18n="layerTitle">🛰️ ANALYSIS LAYERS</h4>
-                <div class="layer-opt active" data-layer="ndvi" onclick="switchLayer('ndvi')"><span class="layer-dot"
-                        style="background:#4caf50;"></span><span data-i18n="ndvi">NDVI Vegetation</span></div>
-                <div class="layer-opt" data-layer="ndre" onclick="switchLayer('ndre')"><span class="layer-dot"
-                        style="background:#2196f3;"></span><span data-i18n="ndre">NDRE Nitrogen (B5/B8A)</span></div>
-                <div class="layer-opt" data-layer="ndwi" onclick="switchLayer('ndwi')"><span class="layer-dot"
-                        style="background:#00bcd4;"></span><span data-i18n="ndwi">NDWI Leaf Moisture (B8/B11)</span>
+            <div class="layer-panel" id="panel-layers">
+                <div class="collapsible-header" onclick="toggleCollapse('panel-layers')">
+                    <h4 data-i18n="layerTitle" style="margin:0;">🛰️ ANALYSIS LAYERS</h4>
+                    <span class="chevron" id="chev-layers">▼</span>
                 </div>
-                <div class="layer-opt" data-layer="moisture" onclick="switchLayer('moisture')"><span class="layer-dot"
-                        style="background:#0288d1;"></span><span data-i18n="moisture">Soil Moisture</span></div>
-                <div class="layer-opt" data-layer="lai" onclick="switchLayer('lai')"><span class="layer-dot"
-                        style="background:#8bc34a;"></span><span data-i18n="lai">LAI Leaf Area</span></div>
-                <div class="layer-opt" data-layer="evi" onclick="switchLayer('evi')"><span class="layer-dot"
-                        style="background:#ff9800;"></span><span data-i18n="evi">EVI Enhanced Veg.</span></div>
-                <div class="layer-opt" data-layer="stress" onclick="switchLayer('stress')"><span class="layer-dot"
-                        style="background:#f44336;"></span><span data-i18n="stress">Growth Stress</span></div>
-                <div class="layer-divider" data-i18n="advLabel">Soil & Crop Diagnostics</div>
-                <div class="layer-opt" data-layer="ph" onclick="switchLayer('ph')"><span class="layer-dot"
-                        style="background:#9c27b0;"></span><span data-i18n="ph">Soil pH (SoilGrids)</span></div>
-                <div class="layer-opt" data-layer="chl" onclick="switchLayer('chl')"><span class="layer-dot"
-                        style="background:#00e676;"></span><span data-i18n="chl">Chlorophyll</span></div>
-                <div class="layer-opt" data-layer="irrigation" onclick="switchLayer('irrigation')"><span
-                        class="layer-dot" style="background:#29b6f6;"></span><span data-i18n="irrigation">Irrigation
-                        Need</span></div>
-                <div class="layer-opt" data-layer="harvest" onclick="switchLayer('harvest')"><span class="layer-dot"
-                        style="background:#ffd54f;"></span><span data-i18n="harvest">Harvest Readiness</span></div>
-                <div class="basemap-bar">
-                    <button class="basemap-btn active" onclick="setBasemap('sat')"
-                        data-i18n="satellite">Satellite</button>
-                    <button class="basemap-btn" onclick="setBasemap('osm')" data-i18n="street">Street</button>
-                    <button class="basemap-btn" onclick="setBasemap('dark')" data-i18n="dark">Dark</button>
+                <div class="collapsible-body" id="body-layers">
+                    <div class="layer-opt active" data-layer="ndvi" onclick="switchLayer('ndvi')"><span class="layer-dot"
+                            style="background:#4caf50;"></span><span data-i18n="ndvi">NDVI Vegetation</span></div>
+                    <div class="layer-opt" data-layer="ndre" onclick="switchLayer('ndre')"><span class="layer-dot"
+                            style="background:#2196f3;"></span><span data-i18n="ndre">NDRE Nitrogen (B5/B8A)</span></div>
+                    <div class="layer-opt" data-layer="ndwi" onclick="switchLayer('ndwi')"><span class="layer-dot"
+                            style="background:#00bcd4;"></span><span data-i18n="ndwi">NDWI Leaf Moisture (B8/B11)</span>
+                    </div>
+                    <div class="layer-opt" data-layer="moisture" onclick="switchLayer('moisture')"><span class="layer-dot"
+                            style="background:#0288d1;"></span><span data-i18n="moisture">Soil Moisture</span></div>
+                    <div class="layer-opt" data-layer="lai" onclick="switchLayer('lai')"><span class="layer-dot"
+                            style="background:#8bc34a;"></span><span data-i18n="lai">LAI Leaf Area</span></div>
+                    <div class="layer-opt" data-layer="evi" onclick="switchLayer('evi')"><span class="layer-dot"
+                            style="background:#ff9800;"></span><span data-i18n="evi">EVI Enhanced Veg.</span></div>
+                    <div class="layer-opt" data-layer="stress" onclick="switchLayer('stress')"><span class="layer-dot"
+                            style="background:#f44336;"></span><span data-i18n="stress">Growth Stress</span></div>
+                    <div class="layer-divider" data-i18n="advLabel">Soil & Crop Diagnostics</div>
+                    <div class="layer-opt" data-layer="ph" onclick="switchLayer('ph')"><span class="layer-dot"
+                            style="background:#9c27b0;"></span><span data-i18n="ph">Soil pH (SoilGrids)</span></div>
+                    <div class="layer-opt" data-layer="chl" onclick="switchLayer('chl')"><span class="layer-dot"
+                            style="background:#00e676;"></span><span data-i18n="chl">Chlorophyll</span></div>
+                    <div class="layer-opt" data-layer="irrigation" onclick="switchLayer('irrigation')"><span
+                            class="layer-dot" style="background:#29b6f6;"></span><span data-i18n="irrigation">Irrigation
+                            Need</span></div>
+                    <div class="layer-opt" data-layer="harvest" onclick="switchLayer('harvest')"><span class="layer-dot"
+                            style="background:#ffd54f;"></span><span data-i18n="harvest">Harvest Readiness</span></div>
+                    <div class="basemap-bar">
+                        <button class="basemap-btn active" onclick="setBasemap('sat')"
+                            data-i18n="satellite">Satellite</button>
+                        <button class="basemap-btn" onclick="setBasemap('osm')" data-i18n="street">Street</button>
+                        <button class="basemap-btn" onclick="setBasemap('dark')" data-i18n="dark">Dark</button>
+                    </div>
                 </div>
             </div>
 
             <div class="color-legend">
                 <div class="legend-title" id="legend-title">NDVI — Vegetation Vigor</div>
+                <div class="legend-bar" id="legend-bar"
+                    style="background:linear-gradient(to right,#d32f2f,#ff9800,#fdd835,#8bc34a,#2e7d32);"></div>
+                <div class="legend-labels" id="legend-labels"><span>0.0 Low</span><span>0.5</span><span>1.0 High</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- 1. Active Field Meta -->
+            <div class="card">
+                <div class="card-header"><span style="color:var(--cyan);">🌱</span> <span data-i18n="activeFieldTitle">ACTIVE FIELD PROFILE</span>
+                </div>
+                <div class="persona-row"><span class="persona-label" data-i18n="fieldName">Field Name</span><span
+                        class="persona-value" id="cur-field-name">—</span></div>
+                <div class="persona-row"><span class="persona-label" data-i18n="crops">Crop Cultivar</span>
+                    <span>
+                        <select class="crop-select" id="cur-crop-select" onchange="updateCurrentCrop(this.value)">
+                            <option value="Rice" selected>🌾 Rice (ข้าวหอมมะลิ)</option>
+                            <option value="Durian">🌳 Durian (ทุเรียน)</option>
+                            <option value="Cassava">🌿 Cassava (มันสำปะหลัง)</option>
+                            <option value="Mango">🥭 Mango (มะม่วง)</option>
+                            <option value="Sugarcane">🎋 Sugarcane (อ้อย)</option>
+                            <option value="OilPalm">🌴 Oil Palm (ปาล์มน้ำมัน)</option>
+                        </select>
+                    </span>
+                </div>e" id="legend-title">NDVI — Vegetation Vigor</div>
                 <div class="legend-bar" id="legend-bar"
                     style="background:linear-gradient(to right,#d32f2f,#ff9800,#fdd835,#8bc34a,#2e7d32);"></div>
                 <div class="legend-labels" id="legend-labels"><span>0.0 Low</span><span>0.5</span><span>1.0 High</span>
