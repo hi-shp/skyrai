@@ -99,10 +99,38 @@ class SkyRaiHandler(http.server.SimpleHTTPRequestHandler):
             }
             self.wfile.write(json.dumps(resp, ensure_ascii=False).encode('utf-8'))
             return
-        elif self.path == '/' or self.path == '/index.html':
-            self.path = '/skyrai.html'
-        
-        super().do_GET()
+    def do_POST(self):
+        if self.path == '/api/save-preset-fields':
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length).decode('utf-8')
+            try:
+                fields_data = json.loads(post_data)
+                html_path = Path(__file__).parent / "skyrai.html"
+                if html_path.exists():
+                    content = html_path.read_text(encoding='utf-8')
+                    # Format fields JSON cleanly
+                    json_str = json.dumps(fields_data, indent=12, ensure_ascii=False)
+                    import re
+                    pattern = r'var DEFAULT_PRESET_FIELDS = \[[\s\S]*?\];'
+                    replacement = f'var DEFAULT_PRESET_FIELDS = {json_str};'
+                    new_content = re.sub(pattern, replacement, content)
+                    html_path.write_text(new_content, encoding='utf-8')
+                    print(f"[SKYRAI] Baked {len(fields_data)} user fields permanently into skyrai.html!")
+                
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"success": True, "count": len(fields_data)}).encode('utf-8'))
+                return
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+                return
+
+        self.send_response(404)
+        self.end_headers()
 
 if __name__ == "__main__":
     os.chdir(Path(__file__).parent)
