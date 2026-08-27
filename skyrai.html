@@ -2212,6 +2212,96 @@
         var activeLayer = 'ndvi';
 
         /* ═══════════════════════════════════════════════════════════════
+           6.1 3D PERSPECTIVE TILT & BEARING CONTROLLER (Google Maps Style)
+           ═══════════════════════════════════════════════════════════════ */
+        var mapTilt = {
+            pitch: 0,      // 0 deg (flat) to 60 deg (tilted)
+            bearing: 0,    // 0 deg to 360 deg
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            startPitch: 0,
+            startBearing: 0
+        };
+
+        function apply3DTransform() {
+            var pane = document.querySelector('#map .leaflet-map-pane');
+            if (!pane) return;
+            var badge = document.getElementById('tilt-angle-badge');
+            var btn = document.getElementById('btn-tilt-toggle');
+
+            if (badge) badge.textContent = Math.round(mapTilt.pitch) + '°';
+            if (btn) btn.classList.toggle('active', mapTilt.pitch > 5);
+
+            if (mapTilt.pitch === 0 && mapTilt.bearing === 0) {
+                pane.style.transform = '';
+                return;
+            }
+            pane.style.transform = 'rotateX(' + mapTilt.pitch + 'deg) rotateZ(' + mapTilt.bearing + 'deg)';
+        }
+
+        function toggle3DTilt() {
+            if (mapTilt.pitch < 20) {
+                mapTilt.pitch = 45;
+            } else {
+                mapTilt.pitch = 0;
+                mapTilt.bearing = 0;
+            }
+            apply3DTransform();
+        }
+
+        function reset3DView() {
+            mapTilt.pitch = 0;
+            mapTilt.bearing = 0;
+            apply3DTransform();
+        }
+
+        function setup3DMapListeners() {
+            var mapContainer = map.getContainer();
+
+            // Prevent context menu on right click inside map for smooth dragging
+            mapContainer.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            });
+
+            mapContainer.addEventListener('mousedown', function (e) {
+                // Trigger 3D tilt drag on Right-Click (button 2), or Ctrl+LeftClick, or Shift+LeftClick
+                if (e.button === 2 || (e.button === 0 && (e.ctrlKey || e.shiftKey))) {
+                    e.preventDefault();
+                    mapTilt.isDragging = true;
+                    mapTilt.startX = e.clientX;
+                    mapTilt.startY = e.clientY;
+                    mapTilt.startPitch = mapTilt.pitch;
+                    mapTilt.startBearing = mapTilt.bearing;
+                    map.dragging.disable();
+                    document.body.style.cursor = 'grabbing';
+                }
+            });
+
+            window.addEventListener('mousemove', function (e) {
+                if (!mapTilt.isDragging) return;
+                var deltaY = e.clientY - mapTilt.startY;
+                var deltaX = e.clientX - mapTilt.startX;
+
+                // Dragging UP tilts forward (increases pitch), dragging DOWN decreases pitch
+                var newPitch = clamp(mapTilt.startPitch - deltaY * 0.35, 0, 60);
+                var newBearing = (mapTilt.startBearing + deltaX * 0.35) % 360;
+
+                mapTilt.pitch = newPitch;
+                mapTilt.bearing = newBearing;
+                apply3DTransform();
+            });
+
+            window.addEventListener('mouseup', function (e) {
+                if (mapTilt.isDragging) {
+                    mapTilt.isDragging = false;
+                    document.body.style.cursor = '';
+                    if (!drawMode) map.dragging.enable();
+                }
+            });
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
            7. DRAWING TOOLS WITH AUTO-SAVE AS NEW FIELD
            ═══════════════════════════════════════════════════════════════ */
         var drawMode = null, drawStart = null, tempShape = null, polyPts = [], polyMarkers = [];
