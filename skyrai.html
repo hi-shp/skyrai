@@ -1704,6 +1704,12 @@
                     (currentLang === 'th' ? 'ยังไม่มีแปลงที่ดิน<br>กดปุ่มด้านล่างเพื่อเริ่มวาด' : 'No fields yet.<br>Click below to draw.') + '</div>';
                 return;
             }
+
+            // Always display fields in natural sorted order (Plot 1, Plot 2, Plot 3, Plot 4)
+            myFields.sort(function (a, b) {
+                return (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' });
+            });
+
             el.innerHTML = myFields.map(function (f) {
                 var isAct = activeField && activeField.id === f.id;
                 var rai = (f.areaM2 / 1600).toFixed(1);
