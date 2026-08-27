@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAEFARM x SKYRAI | Smart Agri-Management Dashboard</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for smooth charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border-card: #f1f5f9;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --text-muted: #94a3b8;
+            --primary-green: #10b981;
+            --green-light: #ecfdf5;
+            --green-border: #a7f3d0;
+            --warning-orange: #f59e0b;
+            --warning-light: #fffbeb;
+            --danger-red: #ef4444;
+            --danger-light: #fef2f2;
+            --accent-blue: #3b82f6;
+            --radius-card: 18px;
+            --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+            --shadow-hover: 0 10px 30px -4px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* ── Left Sidebar ───────────────────────────────────── */
+        .sidebar {
+            width: 260px;
+            background: #ffffff;
+            border-right: 1px solid #eef2f6;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 18px;
+            flex-shrink: 0;
+            min-height: 100vh;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 22px;
+            padding: 4px 8px;
+        }
+
+        .brand-saefarm {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+            font-size: 16px;
+            color: #10b981;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-divider {
+            color: #cbd5e1;
+            font-size: 12px;
+            font-weight: 400;
+        }
+
+        .brand-partner {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 800;
+            font-size: 15px;
+            color: #f59e0b;
+        }
+
+        /* Dropdown selector */
+        .group-select-wrap {
+            margin-bottom: 24px;
+        }
+
+        .group-select {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .group-select:hover {
+            border-color: #cbd5e1;
+            background: #ffffff;
+        }
+
+        /* Menu Items */
+        .menu-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .menu-item a:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .menu-item.active a {
+            background: #ecfdf5;
+            color: #10b981;
+            font-weight: 700;
+        }
+
+        .menu-item.active a .menu-icon {
+            color: #10b981;
+        }
+
+        .menu-icon {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            color: #94a3b8;
+        }
+
+        .sidebar-footer {
+            padding-top: 18px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-switch-map {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #0ea5e9, #10b981);
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+            transition: all 0.2s;
+        }
+
+        .btn-switch-map:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+        }
+
+        /* ── Main Content Area ──────────────────────────────── */
+        .main-content {
+            flex: 1;
+            padding: 32px 40px;
+            overflow-y: auto;
+            max-width: 1440px;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #334155;
+            letter-spacing: -0.3px;
+        }
+
+        /* Card System */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-card);
+            border: 1px solid var(--border-card);
+            box-shadow: var(--shadow-card);
+            padding: 22px 24px;
+            position: relative;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Grid Layouts */
+        .grid-row-1 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) 2fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .grid-row-2 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) 1fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .grid-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .grid-row-4 {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        /* ── Row 1 Cards ────────────────────────────────────── */
+        .farm-stat-card {
+            min-height: 140px;
+        }
+
+        .stat-icon-wrap {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon-wrap.green {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .stat-icon-wrap.orange {
+            background: #fffbeb;
+            color: #f59e0b;
+        }
+
+        .stat-icon-wrap.red {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .stat-label.green { color: #10b981; }
+        .stat-label.orange { color: #f59e0b; }
+        .stat-label.red { color: #ef4444; }
+
+        .stat-val-wrap {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 4px;
+            margin-top: auto;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1e293b;
+            line-height: 1;
+        }
+
+        .stat-unit {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        /* Growth Rate Card with Circular Gauge */
+        .growth-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 32px;
+        }
+
+        .growth-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #10b981;
+            align-self: flex-start;
+        }
+
+        .donut-container {
+            position: relative;
+            width: 105px;
+            height: 105px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-svg {
+            transform: rotate(-90deg);
+            width: 100%;
+            height: 100%;
+        }
+
+        .donut-bg {
+            fill: none;
+            stroke: #e2e8f0;
+            stroke-width: 10;
+        }
+
+        .donut-fill {
+            fill: none;
+            stroke: #10b981;
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: 68; /* ~76% */
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .donut-text {
+            position: absolute;
+            font-size: 15px;
+            font-weight: 800;
+            color: #334155;
+            letter-spacing: -0.5px;
+        }
+
+        /* ── Row 2 Index & Biomass Cards ────────────────────── */
+        .metric-chart-card {
+            min-height: 170px;
+            padding: 18px 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .metric-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            z-index: 2;
+        }
+
+        .metric-chart-bg {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .metric-val-wrap {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 4px;
+            z-index: 2;
+            margin-top: auto;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        /* Action Card: Go to Farm Management */
+        .action-card {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .action-card:hover {
+            background: #cbd5e1;
+            transform: translateY(-2px);
+        }
+
+        .action-circle-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 2px solid #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 18px;
+            font-weight: 800;
+            transition: transform 0.2s;
+        }
+
+        .action-card:hover .action-circle-icon {
+            transform: scale(1.1);
+            border-color: #334155;
+            color: #334155;
+        }
+
+        .action-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #475569;
+            text-align: center;
+        }
+
+        /* ── Row 3 Weather & Hourly Forecast ─────────────────── */
+        .weather-summary-card {
+            min-height: 180px;
+        }
+
+        .weather-icon-sun {
+            font-size: 40px;
+            color: #f59e0b;
+            margin-bottom: 6px;
+        }
+
+        .weather-status-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .weather-status-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            text-align: right;
+            margin-top: auto;
+        }
+
+        .hourly-forecast-card {
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .forecast-chart-container {
+            width: 100%;
+            height: 85px;
+            position: relative;
+        }
+
+        .hourly-timeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 10px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .timeline-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timeline-weather-icon {
+            font-size: 16px;
+            color: #f59e0b;
+        }
+
+        .timeline-time {
+            font-size: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            padding: 3px 6px;
+            border-radius: 10px;
+        }
+
+        .timeline-slot.current .timeline-time {
+            background: #1e293b;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* ── Row 4 Weather Detail Cards ─────────────────────── */
+        .weather-metric-card {
+            min-height: 150px;
+            padding: 18px 20px;
+        }
+
+        .weather-metric-icon {
+            font-size: 26px;
+            margin-bottom: 8px;
+        }
+
+        .weather-metric-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .weather-metric-val-wrap {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 3px;
+            margin-top: auto;
+        }
+
+        .weather-metric-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .weather-metric-unit {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .grid-row-1 { grid-template-columns: repeat(2, 1fr); }
+            .grid-row-2 { grid-template-columns: repeat(3, 1fr); }
+            .grid-row-4 { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; min-height: auto; }
+            .main-content { padding: 20px; }
+            .grid-row-1, .grid-row-2, .grid-row-3, .grid-row-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Left Sidebar ────────────────────────────────────── -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-saefarm">
+                <span>🌱</span>
+                <span>SAEFARM</span>
+            </div>
+            <span class="brand-divider">✕</span>
+            <div class="brand-partner">
+                <span>🌾</span>
+                <span>AGRI-COOP</span>
+            </div>
+        </div>
+
+        <div class="group-select-wrap">
+            <div class="group-select">
+                <span>National Agri-Federation & Coop Test</span>
+                <span>▾</span>
+            </div>
+        </div>
+
+        <ul class="menu-list">
+            <li class="menu-item active">
+                <a href="#dashboard">
+                    <span class="menu-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/skyrai.html">
+                    <span class="menu-icon">🏢</span>
+                    <span>Farm Management</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#products">
+                    <span class="menu-icon">📦</span>
+                    <span>Product Management</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#recommendations">
+                    <span class="menu-icon">🏷️</span>
+                    <span>Product Recommendations</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#orders">
+                    <span class="menu-icon">🛒</span>
+                    <span>Order Management</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#tasks">
+                    <span class="menu-icon">📋</span>
+                    <span>Task Status & Operations</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#fertilizers">
+                    <span class="menu-icon">🧪</span>
+                    <span>Fertilizer & Chemical Inventory</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="/skyrai.html">
+                    <span class="menu-icon">👁️</span>
+                    <span>Total Farm Monitoring</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="/skyrai.html" class="btn-switch-map">
+                <span>🛰️</span>
+                <span>Open Sentinel-2 Map</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ── Main Dashboard Content ──────────────────────────── -->
+    <main class="main-content">
+        <header class="page-header">
+            <h2 class="page-title">National Agri-Federation & Regional Coop Test Diagnostics</h2>
+        </header>
+
+        <!-- ── Row 1: Farm Status & Growth Rate (4 Cards) ──────── -->
+        <section class="grid-row-1">
+            <!-- Card 1: Managed Farms -->
+            <div class="card farm-stat-card">
+                <div class="stat-icon-wrap green">
+                    <span>🧭</span>
+                </div>
+                <div class="stat-label green">Managed Farms</div>
+                <div class="stat-val-wrap">
+                    <span class="stat-value" id="val-managed-farms">9</span>
+                    <span class="stat-unit">units</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Caution Farms -->
+            <div class="card farm-stat-card">
+                <div class="stat-icon-wrap orange">
+                    <span>🧭</span>
+                </div>
+                <div class="stat-label orange">Caution Farms</div>
+                <div class="stat-val-wrap">
+                    <span class="stat-value" id="val-caution-farms">0</span>
+                    <span class="stat-unit">units</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Alert Farms -->
+            <div class="card farm-stat-card">
+                <div class="stat-icon-wrap red">
+                    <span>🧭</span>
+                </div>
+                <div class="stat-label red">Alert Farms</div>
+                <div class="stat-val-wrap">
+                    <span class="stat-value" id="val-alert-farms">0</span>
+                    <span class="stat-unit">units</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Farm Average Growth Rate -->
+            <div class="card growth-card">
+                <div class="growth-title">Farm Average Growth Rate</div>
+                <div class="donut-container">
+                    <svg class="donut-svg" viewBox="0 0 100 100">
+                        <circle class="donut-bg" cx="50" cy="50" r="42"></circle>
+                        <circle class="donut-fill" id="growth-donut" cx="50" cy="50" r="42"></circle>
+                    </svg>
+                    <div class="donut-text" id="growth-rate-text">76.00%</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Row 2: Satellite Crop Indices & Biomass (5 Cards) ── -->
+        <section class="grid-row-2">
+            <!-- Card 1: Leaf Area Index (LAI) -->
+            <div class="card metric-chart-card">
+                <div class="metric-title">Leaf Area Index (LAI)</div>
+                <canvas class="metric-chart-bg" id="chart-lai"></canvas>
+                <div class="metric-val-wrap">
+                    <span class="metric-value" id="val-lai">2.01</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Water Stress Index -->
+            <div class="card metric-chart-card">
+                <div class="metric-title">Water Stress Index</div>
+                <canvas class="metric-chart-bg" id="chart-stress"></canvas>
+                <div class="metric-val-wrap">
+                    <span class="metric-value" id="val-stress">12,694.09</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Aboveground Biomass -->
+            <div class="card metric-chart-card">
+                <div class="metric-title">Aboveground Biomass</div>
+                <canvas class="metric-chart-bg" id="chart-above"></canvas>
+                <div class="metric-val-wrap">
+                    <span class="metric-value" id="val-above">12,694.09</span>
+                    <span class="metric-unit">t/ha</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Belowground Biomass -->
+            <div class="card metric-chart-card">
+                <div class="metric-title">Belowground Biomass</div>
+                <canvas class="metric-chart-bg" id="chart-below"></canvas>
+                <div class="metric-val-wrap">
+                    <span class="metric-value" id="val-below">1,780.38</span>
+                    <span class="metric-unit">t/ha</span>
+                </div>
+            </div>
+
+            <!-- Card 5: Action Link -->
+            <a href="/skyrai.html" class="card action-card">
+                <div class="action-circle-icon">
+                    <span>›</span>
+                </div>
+                <div class="action-text">Go to Farm Management</div>
+            </a>
+        </section>
+
+        <!-- ── Row 3: Weather Summary & 24h Hourly Forecast ────── -->
+        <section class="grid-row-3">
+            <!-- Left Weather Card -->
+            <div class="card weather-summary-card">
+                <div>
+                    <div class="weather-icon-sun">☀️</div>
+                    <div class="weather-status-label">Weather</div>
+                </div>
+                <div class="weather-status-text" id="weather-summary-text">Clear & Sunny</div>
+            </div>
+
+            <!-- Right Hourly Forecast with Curve Chart -->
+            <div class="card hourly-forecast-card">
+                <div class="forecast-chart-container">
+                    <canvas id="chart-hourly-temp"></canvas>
+                </div>
+                <div class="hourly-timeline" id="hourly-timeline-container">
+                    <!-- Hourly items will be rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Row 4: Weather Environment Metrics (5 Cards) ───── -->
+        <section class="grid-row-4">
+            <!-- Card 1: Temperature -->
+            <div class="card weather-metric-card">
+                <div class="weather-metric-icon">🌡️</div>
+                <div class="weather-metric-label">Temperature</div>
+                <div class="weather-metric-val-wrap">
+                    <span class="weather-metric-value" id="val-temp">-3° / 6°</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Humidity -->
+            <div class="card weather-metric-card">
+                <div class="weather-metric-icon">💧</div>
+                <div class="weather-metric-label">Humidity</div>
+                <div class="weather-metric-val-wrap">
+                    <span class="weather-metric-value" id="val-humidity">27</span>
+                    <span class="weather-metric-unit">%</span>
+                </div>
+            </div>
+
+            <!-- Card 3: UV Index -->
+            <div class="card weather-metric-card">
+                <div class="weather-metric-icon">☀️</div>
+                <div class="weather-metric-label">UV Index (UVI)</div>
+                <div class="weather-metric-val-wrap">
+                    <span class="weather-metric-value" id="val-uvi">2.65</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Wind Speed -->
+            <div class="card weather-metric-card">
+                <div class="weather-metric-icon">💨</div>
+                <div class="weather-metric-label">Wind Speed</div>
+                <div class="weather-metric-val-wrap">
+                    <span class="weather-metric-value" id="val-wind">3.43</span>
+                    <span class="weather-metric-unit">m/s</span>
+                </div>
+            </div>
+
+            <!-- Card 5: Precipitation -->
+            <div class="card weather-metric-card">
+                <div class="weather-metric-icon">🌧️</div>
+                <div class="weather-metric-label">Precipitation</div>
+                <div class="weather-metric-val-wrap">
+                    <span class="weather-metric-value" id="val-rain">0</span>
+                    <span class="weather-metric-unit">mm/h</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ── JavaScript to render mini sparkline charts & hourly temp ── -->
+    <script>
+        // 1. Helper to render smooth area charts
+        function createMiniAreaChart(canvasId, dataPoints, isBellCurve) {
+            var ctx = document.getElementById(canvasId).getContext('2d');
+            var grad = ctx.createLinearGradient(0, 0, 0, 80);
+            grad.addColorStop(0, 'rgba(16, 185, 129, 0.45)');
+            grad.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dataPoints.map(function (_, i) { return i; }),
+                    datasets: [{
+                        data: dataPoints,
+                        borderColor: '#10b981',
+                        borderWidth: 2.2,
+                        backgroundColor: grad,
+                        fill: true,
+                        tension: isBellCurve ? 0.45 : 0.35,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    scales: {
+                        x: { display: false },
+                        y: { display: false }
+                    },
+                    layout: { padding: 0 }
+                }
+            });
+        }
+
+        // 2. Render Mini Area Charts exactly matching the image
+        createMiniAreaChart('chart-lai', [0.1, 0.3, 0.9, 1.8, 2.3, 2.0, 1.2, 0.4], true); // Bell shape
+        createMiniAreaChart('chart-stress', [100, 200, 500, 1200, 2800, 5200, 8900, 12694], false); // Growth shape
+        createMiniAreaChart('chart-above', [80, 150, 400, 1100, 2600, 5100, 8700, 12694], false); // Growth shape
+        createMiniAreaChart('chart-below', [30, 80, 180, 420, 800, 1200, 1550, 1780], false); // Growth shape
+
+        // 3. Render 24-Hour Hourly Temperature Curve Chart & Timeline
+        var hourlyData = [
+            { time: '05:00', temp: -3, current: true },
+            { time: '06:00', temp: -3 },
+            { time: '07:00', temp: -3 },
+            { time: '08:00', temp: -2 },
+            { time: '09:00', temp: 0 },
+            { time: '10:00', temp: 3 },
+            { time: '11:00', temp: 4 },
+            { time: '12:00', temp: 5 },
+            { time: '13:00', temp: 6 },
+            { time: '14:00', temp: 6 },
+            { time: '15:00', temp: 6 },
+            { time: '16:00', temp: 6 }
+        ];
+
+        // Render timeline slot HTML
+        var timelineContainer = document.getElementById('hourly-timeline-container');
+        hourlyData.forEach(function (slot) {
+            var el = document.createElement('div');
+            el.className = 'timeline-slot' + (slot.current ? ' current' : '');
+            el.innerHTML = '<span class="timeline-weather-icon">☀️</span>' +
+                '<span class="timeline-time">' + slot.time.replace(':00', 'h') + '</span>';
+            timelineContainer.appendChild(el);
+        });
+
+        // Hourly Temperature Spline Line Chart
+        var tempCtx = document.getElementById('chart-hourly-temp').getContext('2d');
+        new Chart(tempCtx, {
+            type: 'line',
+            data: {
+                labels: hourlyData.map(function (d) { return d.time; }),
+                datasets: [{
+                    data: hourlyData.map(function (d) { return d.temp; }),
+                    borderColor: '#cbd5e1',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#94a3b8',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 1.5,
+                    pointRadius: 3.5,
+                    tension: 0.35,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function (c) { return c.raw + '°C'; }
+                        }
+                    }
+                },
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        position: 'left',
+                        ticks: {
+                            callback: function (val) { return val + '°'; },
+                            color: '#94a3b8',
+                            font: { size: 10 }
+                        },
+                        grid: { color: '#f1f5f9' },
+                        suggestedMin: -5,
+                        suggestedMax: 8
+                    }
+                },
+                layout: { padding: { top: 12, bottom: 4, left: 4, right: 4 } }
+            }
+        });
+    </script>
+</body>
+
+</html>
