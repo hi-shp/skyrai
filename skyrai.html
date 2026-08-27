@@ -1638,9 +1638,27 @@
         function saveStoredFields() {
             try {
                 localStorage.setItem('skyrai_user_fields', JSON.stringify(myFields));
+                // Automatically bake into source code via backend
+                bakeFieldsIntoCode();
             } catch (e) { }
             renderFieldList();
             renderAllFieldPolygons();
+        }
+
+        async function bakeFieldsIntoCode() {
+            if (!myFields || myFields.length === 0) return;
+            try {
+                var res = await fetch('/api/save-preset-fields', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(myFields)
+                });
+                if (res.ok) {
+                    console.log('✓ Successfully baked ' + myFields.length + ' fields into skyrai.html source code!');
+                }
+            } catch (err) {
+                console.warn('Bake to code notice:', err);
+            }
         }
 
         function renderFieldList() {
