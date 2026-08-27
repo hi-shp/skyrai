@@ -1084,7 +1084,61 @@
             margin-left: 6px;
         }
 
-                <!-- Left Field Manager & Draw Tools -->
+        /* ── Responsive ──────────────────────────────────────── */
+        @media(max-width:900px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .map-wrap {
+                flex: none;
+                height: 45vh;
+            }
+
+            .dashboard {
+                width: 100%;
+                flex: 1;
+            }
+
+            .layer-panel {
+                width: 160px;
+            }
+
+            .left-panel {
+                width: 180px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🛰️</div>
+            <h1>SKYRAI<span data-i18n="appSubtitle">Sentinel Hub Precision Agriculture (Sentinel-2 10m)</span></h1>
+        </div>
+        <div class="header-right">
+            <div class="hub-badge">
+                <span class="status-dot hub"></span>
+                <span id="hub-status-text">Sentinel Hub: Connected</span>
+            </div>
+            <div class="lang-toggle">
+                <button class="lang-btn active" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" onclick="setLang('th')">TH</button>
+            </div>
+            <div class="header-status">
+                <div><span class="status-dot live"></span>Sentinel-2 L2A (10m)</div>
+                <div id="header-time" style="color:var(--text-muted);font-size:10px;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="map-wrap">
+            <div id="map"></div>
+
+            <!-- Left Field Manager & Draw Tools -->
             <div class="left-panel">
                 <!-- Draw Tools -->
                 <div class="panel-box" id="panel-draw">
@@ -1183,33 +1237,6 @@
                             <option value="Rice" selected>🌾 Rice (ข้าวหอมมะลิ)</option>
                             <option value="Durian">🌳 Durian (ทุเรียน)</option>
                             <option value="Cassava">🌿 Cassava (มันสำปะหลัง)</option>
-                            <option value="Mango">🥭 Mango (มะม่วง)</option>
-                            <option value="Sugarcane">🎋 Sugarcane (อ้อย)</option>
-                            <option value="OilPalm">🌴 Oil Palm (ปาล์มน้ำมัน)</option>
-                        </select>
-                    </span>
-                </div>e" id="legend-title">NDVI — Vegetation Vigor</div>
-                <div class="legend-bar" id="legend-bar"
-                    style="background:linear-gradient(to right,#d32f2f,#ff9800,#fdd835,#8bc34a,#2e7d32);"></div>
-                <div class="legend-labels" id="legend-labels"><span>0.0 Low</span><span>0.5</span><span>1.0 High</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dashboard -->
-        <div class="dashboard">
-            <!-- 1. Active Field Meta -->
-            <div class="card">
-                <div class="card-header"><span style="color:var(--cyan);">🌱</span> <span data-i18n="activeFieldTitle">ACTIVE FIELD PROFILE</span>
-                </div>
-                <div class="persona-row"><span class="persona-label" data-i18n="fieldName">Field Name</span><span
-                        class="persona-value" id="cur-field-name">—</span></div>
-                <div class="persona-row"><span class="persona-label" data-i18n="crops">Crop Cultivar</span>
-                    <span>
-                        <select class="crop-select" id="cur-crop-select" onchange="updateCurrentCrop(this.value)">
-                            <option value="Durian">🌳 Durian (ทุเรียน)</option>
-                            <option value="Cassava">🌿 Cassava (มันสำปะหลัง)</option>
-                            <option value="Rice">🌾 Rice (ข้าวหอมมะลิ)</option>
                             <option value="Mango">🥭 Mango (มะม่วง)</option>
                             <option value="Sugarcane">🎋 Sugarcane (อ้อย)</option>
                             <option value="OilPalm">🌴 Oil Palm (ปาล์มน้ำมัน)</option>
