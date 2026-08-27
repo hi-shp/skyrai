@@ -1100,11 +1100,14 @@
 
                 <!-- Field Manager List -->
                 <div class="panel-box">
-                    <h4><span data-i18n="myFields">🏞️ MY FIELDS</span> <span id="field-count"
-                            style="font-size:9px;color:var(--cyan);font-weight:700;">0 fields</span></h4>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <h4><span data-i18n="myFields">🏞️ MY FIELDS</span> <span id="field-count"
+                                style="font-size:9px;color:var(--cyan);font-weight:700;">0 fields</span></h4>
+                    </div>
                     <div class="field-list" id="field-list"></div>
                     <button class="draw-btn add" style="margin-top:8px;" onclick="promptNewField()">➕ <span
                             data-i18n="addNewField">Add New Field</span></button>
+                    <button class="draw-btn" style="margin-top:6px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.4);color:var(--cyan);font-size:11px;" onclick="manualBakeFields()">💾 <span data-i18n="bakeCodeBtn">Save Plots Permanently to Code</span></button>
                 </div>
             </div>
 
