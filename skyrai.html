@@ -1927,6 +1927,11 @@
             });
         }
 
+        function toggleCollapse(panelId) {
+            var el = document.getElementById(panelId);
+            if (el) el.classList.toggle('collapsed');
+        }
+
         function selectField(id) {
             var f = myFields.find(function (item) { return item.id === id; });
             if (!f) return;
@@ -1935,7 +1940,7 @@
             renderAllFieldPolygons();
 
             document.getElementById('cur-field-name').textContent = f.name;
-            document.getElementById('cur-crop-select').value = f.crop || 'Durian';
+            document.getElementById('cur-crop-select').value = f.crop || 'Rice';
             document.getElementById('cur-field-loc').textContent = f.center[0].toFixed(4) + ', ' + f.center[1].toFixed(4);
 
             activeFieldLayerGroup.clearLayers();
