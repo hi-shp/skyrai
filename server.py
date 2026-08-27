@@ -101,6 +101,8 @@ class SkyRaiHandler(http.server.SimpleHTTPRequestHandler):
             return
         elif self.path == '/' or self.path == '/index.html':
             self.path = '/skyrai.html'
+        elif self.path == '/dashboard':
+            self.path = '/dashboard.html'
         
         super().do_GET()
 
