@@ -1210,8 +1210,15 @@
     </header>
 
     <div class="main-container">
-        <div class="map-wrap">
+        <div class="map-wrap" id="map-wrap">
             <div id="map"></div>
+
+            <!-- 3D Perspective Tilt Controls -->
+            <div class="map-3d-controls">
+                <button class="map-3d-btn" id="btn-tilt-toggle" onclick="toggle3DTilt()">📐 <span>3D Tilt</span> <span class="tilt-badge" id="tilt-angle-badge">0°</span></button>
+                <button class="map-3d-btn" id="btn-tilt-reset" onclick="reset3DView()" title="Reset to 2D Top View">🔄 <span>2D Reset</span></button>
+                <div class="tilt-hint" title="Right-click & drag up/down to tilt, left/right to rotate">🖱️ <span>Right-Drag to Tilt</span></div>
+            </div>
 
             <!-- Left Field Manager & Draw Tools -->
             <div class="left-panel">
