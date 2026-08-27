@@ -2914,6 +2914,7 @@
 
         (async function init() {
             updateClock(); setInterval(updateClock, 60000);
+            setup3DMapListeners();
             await verifySentinelHub();
             loadStoredFields();
             if (myFields.length > 0) {
