@@ -1257,13 +1257,24 @@
 
     <div class="main-container">
         <div class="map-wrap" id="map-wrap">
-            <div id="map"></div>
+            <div id="map-viewport">
+                <div id="map"></div>
+            </div>
 
             <!-- 3D Perspective Tilt Controls -->
             <div class="map-3d-controls">
-                <button class="map-3d-btn" id="btn-tilt-toggle" onclick="toggle3DTilt()">📐 <span>3D Tilt</span> <span class="tilt-badge" id="tilt-angle-badge">0°</span></button>
-                <button class="map-3d-btn" id="btn-tilt-reset" onclick="reset3DView()" title="Reset to 2D Top View">🔄 <span>2D Reset</span></button>
-                <div class="tilt-hint" title="Right-click & drag up/down to tilt, left/right to rotate">🖱️ <span>Right-Drag to Tilt</span></div>
+                <button class="map-3d-btn" id="btn-tilt-0" onclick="set3DTiltAngle(0)"><span>2D Top</span></button>
+                <button class="map-3d-btn" id="btn-tilt-30" onclick="set3DTiltAngle(30)"><span>30°</span></button>
+                <button class="map-3d-btn" id="btn-tilt-45" onclick="set3DTiltAngle(45)"><span>45° 3D</span></button>
+                <button class="map-3d-btn" id="btn-tilt-60" onclick="set3DTiltAngle(60)"><span>60° Horizon</span></button>
+                
+                <div class="tilt-slider-wrap">
+                    <span style="font-size:10px;color:var(--cyan);font-weight:700;">📐</span>
+                    <input type="range" class="tilt-slider" id="tilt-slider" min="0" max="65" value="0" oninput="onTiltSliderChange(this.value)">
+                    <span class="tilt-badge" id="tilt-angle-badge">0°</span>
+                </div>
+                
+                <div class="tilt-hint" title="Right-click & drag or Shift+Wheel to tilt">🖱️ <span>Shift+Wheel / Right-Drag</span></div>
             </div>
 
             <!-- Left Field Manager & Draw Tools -->
