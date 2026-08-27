@@ -1549,6 +1549,61 @@
         /* ═══════════════════════════════════════════════════════════════
            4. MULTI-FIELD MANAGER & ALL-FIELD TRANSLUCENT OVERLAYS
            ═══════════════════════════════════════════════════════════════ */
+        var DEFAULT_PRESET_FIELDS = [
+            {
+                id: 'field_plot_1',
+                name: 'Plot 1 — Durian Orchard (สวนทุเรียน)',
+                crop: 'Durian',
+                center: [12.9150, 100.8900],
+                pts: [
+                    { lat: 12.9144, lng: 100.8895 },
+                    { lat: 12.9144, lng: 100.8905 },
+                    { lat: 12.9156, lng: 100.8905 },
+                    { lat: 12.9156, lng: 100.8895 }
+                ],
+                areaM2: 12000
+            },
+            {
+                id: 'field_plot_2',
+                name: 'Plot 2 — Cassava Field (ไร่มันสำปะหลัง)',
+                crop: 'Cassava',
+                center: [12.9180, 100.8940],
+                pts: [
+                    { lat: 12.9170, lng: 100.8930 },
+                    { lat: 12.9170, lng: 100.8950 },
+                    { lat: 12.9190, lng: 100.8950 },
+                    { lat: 12.9190, lng: 100.8930 }
+                ],
+                areaM2: 24000
+            },
+            {
+                id: 'field_plot_3',
+                name: 'Plot 3 — Jasmine Rice Paddy (นาข้าวหอมมะลิ)',
+                crop: 'Rice',
+                center: [12.9135, 100.8945],
+                pts: [
+                    { lat: 12.9125, lng: 100.8935 },
+                    { lat: 12.9125, lng: 100.8958 },
+                    { lat: 12.9145, lng: 100.8958 },
+                    { lat: 12.9145, lng: 100.8935 }
+                ],
+                areaM2: 30000
+            },
+            {
+                id: 'field_plot_4',
+                name: 'Plot 4 — Mango & Mixed Fruit (สวนมะม่วง)',
+                crop: 'Mango',
+                center: [12.9175, 100.8885],
+                pts: [
+                    { lat: 12.9165, lng: 100.8875 },
+                    { lat: 12.9165, lng: 100.8895 },
+                    { lat: 12.9185, lng: 100.8895 },
+                    { lat: 12.9185, lng: 100.8875 }
+                ],
+                areaM2: 16000
+            }
+        ];
+
         var myFields = [];
         var activeField = null;
         var FARM = { center: [12.9150, 100.8900], south: 12.9144, north: 12.9156, west: 100.8895, east: 100.8905 };
@@ -1563,40 +1618,20 @@
             try {
                 var raw = localStorage.getItem('skyrai_user_fields');
                 if (raw) {
-                    myFields = JSON.parse(raw);
+                    var parsed = JSON.parse(raw);
+                    if (Array.isArray(parsed) && parsed.length >= 4) {
+                        myFields = parsed;
+                    } else {
+                        // Ensure all 4 preset fields are always present
+                        myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
+                        saveStoredFields();
+                    }
                 } else {
-                    myFields = [
-                        {
-                            id: 'field_1',
-                            name: 'Plot 1 — Durian Orchard',
-                            crop: 'Durian',
-                            center: [12.9150, 100.8900],
-                            pts: [
-                                { lat: 12.9144, lng: 100.8895 },
-                                { lat: 12.9144, lng: 100.8905 },
-                                { lat: 12.9156, lng: 100.8905 },
-                                { lat: 12.9156, lng: 100.8895 }
-                            ],
-                            areaM2: 12000
-                        },
-                        {
-                            id: 'field_2',
-                            name: 'Plot 2 — Cassava Field',
-                            crop: 'Cassava',
-                            center: [12.9180, 100.8940],
-                            pts: [
-                                { lat: 12.9170, lng: 100.8930 },
-                                { lat: 12.9170, lng: 100.8950 },
-                                { lat: 12.9190, lng: 100.8950 },
-                                { lat: 12.9190, lng: 100.8930 }
-                            ],
-                            areaM2: 24000
-                        }
-                    ];
+                    myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
                     saveStoredFields();
                 }
             } catch (e) {
-                myFields = [];
+                myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
             }
         }
 
