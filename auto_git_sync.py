@@ -4,6 +4,14 @@ import time
 import subprocess
 import datetime
 
+# Fix Windows console UTF-8 output
+if sys.platform.startswith('win'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 # ═══════════════════════════════════════════════════════════════
 # SKYRAI Auto Git Sync Daemon
 # Automatically tracks file edits in c:\ihm, generates meaningful
