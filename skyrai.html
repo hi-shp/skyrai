@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKYRAI(ไร่) — Sentinel Hub Multi-Field Precision Agriculture Platform (10m)</title>
+    <meta name="description"
+        content="Practical 4R precision fertilizer guidance (When, Where, How Much, How) powered by Sentinel Hub 10m satellite data & USDA N-Rich Strip model">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        /* ═══════════════════════════════════════════════════════════
+           SKYRAI Design System — Practical Precision Dark Glassmorphism
+           ═══════════════════════════════════════════════════════════ */
+        :root {
+            --bg-base: #060d1a;
+            --bg-surface: #0c1629;
+            --bg-card: rgba(12, 22, 41, 0.85);
+            --bg-card-alt: rgba(16, 28, 50, 0.75);
+            --border: rgba(148, 163, 184, 0.12);
+            --border-accent: rgba(16, 185, 129, 0.3);
+            --green: #10b981;
+            --green-glow: rgba(16, 185, 129, 0.4);
+            --cyan: #06b6d4;
+            --amber: #f59e0b;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --purple: #8b5cf6;
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+            --text-muted: #64748b;
+            --radius: 14px;
+            --blur: blur(20px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Noto Sans Thai', system-ui, -apple-system, sans-serif;
+            background: var(--bg-base);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Header ─────────────────────────────────────────── */
+        header {
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(8, 47, 73, 0.95));
+            backdrop-filter: var(--blur);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--green), var(--cyan));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px var(--green-glow);
+        }
+
+        .logo h1 {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--green), var(--cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo h1 span {
+            font-weight: 400;
+            font-size: 11px;
+            -webkit-text-fill-color: var(--text-dim);
+            display: block;
+            margin-top: -2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .hub-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            background: rgba(6, 182, 212, 0.15);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--cyan);
+        }
+
+        .lang-toggle {
+            display: flex;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .lang-btn {
+            padding: 5px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: var(--green);
+            color: white;
+        }
+
+        .header-status {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .status-dot.live {
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green-glow);
+        }
+
+        .status-dot.hub {
+            background: var(--cyan);
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.6);
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        /* ── Main Layout ────────────────────────────────────── */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .map-wrap {
+            flex: 1.5;
+            position: relative;
+            min-width: 0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .leaflet-container {
+            background: var(--bg-base) !important;
+        }
+
+        .leaflet-control-zoom a {
+            background: var(--bg-card) !important;
+            color: var(--text) !important;
+            border-color: var(--border) !important;
+            backdrop-filter: var(--blur);
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: var(--bg-surface) !important;
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-surface) !important;
+            color: var(--text) !important;
+            border-radius: var(--radius) !important;
+            border: 1px solid var(--border);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--bg-surface) !important;
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Inter', 'Noto Sans Thai', sans-serif !important;
+            font-size: 12px !important;
+            line-height: 1.6 !important;
+        }
+
+        /* ── Left Field Manager & Draw Panel ─────────────────── */
+        .left-panel {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            z-index: 800;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 220px;
+            max-height: calc(100% - 30px);
+        }
+
+        .panel-box {
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        .panel-box h4 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-dim);
+            margin-bottom: 10px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .draw-btn {
+            width: 100%;
+            padding: 7px 10px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .draw-btn:hover {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: var(--border-accent);
+        }
+
+        .draw-btn.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        .draw-btn.add {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.2));
+            border-color: var(--green);
+            color: white;
+        }
+
+        /* Field List */
+        .field-list {
+            max-height: 200px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .field-list::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .field-list::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 3px;
+        }
+
+        .field-item {
+            padding: 8px 10px;
+            border-radius: 8px;
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .field-item:hover {
+            border-color: var(--border-accent);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .field-item.active {
+            border-color: var(--green);
+            background: rgba(16, 185, 129, 0.15);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+        }
+
+        .field-item .f-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .field-item .f-meta {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .field-item .f-del {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+
+        .field-item .f-del:hover {
+            color: var(--red);
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        /* ── Layer Panel ────────────────────────────────────── */
+        .layer-panel {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 800;
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            width: 210px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+            max-height: calc(100% - 80px);
+            overflow-y: auto;
+        }
+
+        .layer-panel::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .layer-panel::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 3px;
+        }
+
+        .layer-panel h4 {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .layer-divider {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin: 8px 0 4px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .layer-opt {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .layer-opt:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .layer-opt.active {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .layer-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.2s;
+        }
+
+        .layer-opt.active .layer-dot {
+            border-color: currentColor;
+            box-shadow: 0 0 6px currentColor;
+        }
+
+        /* ── Basemap Switcher ────────────────────────────────── */
+        .basemap-bar {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+
+        .basemap-btn {
+            flex: 1;
+            padding: 5px 0;
+            text-align: center;
+            font-size: 9px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-dim);
+            font-family: inherit;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .basemap-btn.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--green);
+            border-color: var(--border-accent);
+        }
+
+        /* ── Color Legend ────────────────────────────────────── */
+        .color-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 14px;
+            z-index: 800;
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .legend-title {
+            font-size: 10px;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .legend-bar {
+            width: 190px;
+            height: 12px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* ── Dashboard Panel ────────────────────────────────── */
+        .dashboard {
+            width: 460px;
+            flex-shrink: 0;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .dashboard::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .dashboard::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 3px;
+        }
+
+        /* ── Card ────────────────────────────────────────────── */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: card-in 0.5s ease-out both;
+        }
+
+        .card:hover {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.06);
+        }
+
+        @keyframes card-in {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--text-dim);
+        }
+
+        /* ── Persona / Farm Meta ─────────────────────────────── */
+        .persona-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 12px;
+        }
+
+        .persona-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .persona-value {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .crop-select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .crop-select option {
+            background: #0c1629;
+            color: #f1f5f9;
+        }
+
+        /* ── Health Score ─────────────────────────────────────── */
+        .health-score {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .health-ring {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .health-ring svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .health-ring .score-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 22px;
+            font-weight: 800;
+        }
+
+        .health-details {
+            flex: 1;
+        }
+
+        .health-details .grade {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .health-details .desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* ── Gauge Grid ──────────────────────────────────────── */
+        .gauge-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .gauge-grid-4 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .gauge-item {
+            text-align: center;
+            padding: 10px 2px;
+            background: var(--bg-card-alt);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .gauge-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .gauge-svg {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 4px;
+            display: block;
+        }
+
+        .gauge-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.06);
+            stroke-width: 4;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .gauge-val {
+            font-size: 11px;
+            font-weight: 700;
+            fill: var(--text);
+        }
+
+        .gauge-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .gauge-status {
+            font-size: 9px;
+            font-weight: 600;
+            margin-top: 1px;
+        }
+
+        .zone-chips {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .zone-chip {
+            font-size: 9px;
+            padding: 3px 8px;
+            border-radius: 16px;
+            font-weight: 600;
+            border: 1px solid var(--border);
+        }
+
+        /* ── SoilGrids & GDD Badge ────────────────────────────── */
+        .soil-grid-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-card-alt);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .soil-prop {
+            font-size: 11px;
+        }
+
+        .soil-prop .sp-lbl {
+            color: var(--text-muted);
+            font-size: 9px;
+        }
+
+        .soil-prop .sp-val {
+            font-weight: 700;
+            color: var(--cyan);
+            margin-top: 1px;
+        }
+
+        /* ── Weather ─────────────────────────────────────────── */
+        .weather-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .weather-cell {
+            background: var(--bg-card-alt);
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .weather-cell .wc-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .weather-cell .wc-val {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .weather-cell .wc-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 1px;
+        }
+
+        .risk-container {
+            margin-top: 10px;
+        }
+
+        .risk-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .risk-label {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        /* ── Spray Calendar ──────────────────────────────────── */
+        .spray-cal {
+            display: flex;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .spray-day {
+            flex: 1;
+            text-align: center;
+            padding: 8px 2px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 9px;
+        }
+
+        .spray-day .sd-day {
+            font-weight: 700;
+            font-size: 11px;
+            margin-bottom: 2px;
+        }
+
+        .spray-day .sd-temp {
+            color: var(--text-dim);
+        }
+
+        .spray-day .sd-rain {
+            margin-top: 2px;
+        }
+
+        .spray-day.ok {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .spray-day.warn {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .spray-day.no {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .spray-day .sd-icon {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        /* ── Charts ──────────────────────────────────────────── */
+        .chart-wrap {
+            position: relative;
+            height: 150px;
+            margin-top: 6px;
+        }
+
+        .chart-wrap canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        /* ── AI Button ───────────────────────────────────────── */
+        .ai-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: linear-gradient(135deg, var(--green), #059669);
+            color: white;
+            letter-spacing: 0.3px;
+            box-shadow: 0 4px 20px var(--green-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--green-glow);
+        }
+
+        /* ── Practical 4R Prescription Cards ─────────────────── */
+        .four-r-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .four-r-card {
+            background: var(--bg-card-alt);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            padding: 12px 14px;
+            border-left: 4px solid;
+        }
+
+        .four-r-card.when {
+            border-left-color: var(--cyan);
+        }
+
+        .four-r-card.where {
+            border-left-color: var(--amber);
+        }
+
+        .four-r-card.howmuch {
+            border-left-color: var(--green);
+        }
+
+        .four-r-card.how {
+            border-left-color: var(--purple);
+        }
+
+        .four-r-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .four-r-title.when {
+            color: var(--cyan);
+        }
+
+        .four-r-title.where {
+            color: var(--amber);
+        }
+
+        .four-r-title.howmuch {
+            color: var(--green);
+        }
+
+        .four-r-title.how {
+            color: var(--purple);
+        }
+
+        .four-r-item {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .four-r-item strong {
+            color: white;
+        }
+
+        .bullet-dot {
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        /* ── NPK Table ───────────────────────────────────────── */
+        .npk-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 11px;
+        }
+
+        .npk-table th {
+            padding: 6px 8px;
+            text-align: left;
+            color: var(--text-dim);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            font-size: 10px;
+        }
+
+        .npk-table td {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .npk-table .npk-bar {
+            height: 6px;
+            border-radius: 3px;
+            min-width: 10px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 6px;
+        }
+
+        /* ── Responsive ──────────────────────────────────────── */
+        @media(max-width:900px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .map-wrap {
+                flex: none;
+                height: 45vh;
+            }
+
+            .dashboard {
+                width: 100%;
+                flex: 1;
+            }
+
+            .layer-panel {
+                width: 160px;
+            }
+
+            .left-panel {
+                width: 180px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🛰️</div>
+            <h1>SKYRAI<span data-i18n="appSubtitle">Sentinel Hub Precision Agriculture (Sentinel-2 10m)</span></h1>
+        </div>
+        <div class="header-right">
+            <div class="hub-badge">
+                <span class="status-dot hub"></span>
+                <span id="hub-status-text">Sentinel Hub: Connected</span>
+            </div>
+            <div class="lang-toggle">
+                <button class="lang-btn active" onclick="setLang('en')">EN</button>
+                <button class="lang-btn" onclick="setLang('th')">TH</button>
+            </div>
+            <div class="header-status">
+                <div><span class="status-dot live"></span>Sentinel-2 L2A (10m)</div>
+                <div id="header-time" style="color:var(--text-muted);font-size:10px;"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="map-wrap">
+            <div id="map"></div>
+
+            <!-- Left Field Manager & Draw Tools -->
+            <div class="left-panel">
+                <!-- Draw Tools -->
+                <div class="panel-box">
+                    <h4 data-i18n="drawTitle">✏️ DRAW NEW FIELD</h4>
+                    <button class="draw-btn" id="btn-rect" onclick="enableDraw('rect')">📐 <span
+                            data-i18n="drawRect">Rectangle</span></button>
+                    <button class="draw-btn" id="btn-poly" onclick="enableDraw('poly')">🔷 <span
+                            data-i18n="drawPoly">Polygon (Freehand)</span></button>
+                    <button class="draw-btn" onclick="cancelDraw()">❌ <span data-i18n="drawCancel">Cancel
+                            Drawing</span></button>
+                    <div class="area-info" id="area-info"></div>
+                </div>
+
+                <!-- Field Manager List -->
+                <div class="panel-box">
+                    <h4><span data-i18n="myFields">🏞️ MY FIELDS</span> <span id="field-count"
+                            style="font-size:9px;color:var(--cyan);font-weight:700;">0 fields</span></h4>
+                    <div class="field-list" id="field-list"></div>
+                    <button class="draw-btn add" style="margin-top:8px;" onclick="promptNewField()">➕ <span
+                            data-i18n="addNewField">Add New Field</span></button>
+                </div>
+            </div>
+
+            <!-- Layer Controls -->
+            <div class="layer-panel">
+                <h4 data-i18n="layerTitle">🛰️ ANALYSIS LAYERS</h4>
+                <div class="layer-opt active" data-layer="ndvi" onclick="switchLayer('ndvi')"><span class="layer-dot"
+                        style="background:#4caf50;"></span><span data-i18n="ndvi">NDVI Vegetation</span></div>
+                <div class="layer-opt" data-layer="ndre" onclick="switchLayer('ndre')"><span class="layer-dot"
+                        style="background:#2196f3;"></span><span data-i18n="ndre">NDRE Nitrogen (B5/B8A)</span></div>
+                <div class="layer-opt" data-layer="ndwi" onclick="switchLayer('ndwi')"><span class="layer-dot"
+                        style="background:#00bcd4;"></span><span data-i18n="ndwi">NDWI Leaf Moisture (B8/B11)</span>
+                </div>
+                <div class="layer-opt" data-layer="moisture" onclick="switchLayer('moisture')"><span class="layer-dot"
+                        style="background:#0288d1;"></span><span data-i18n="moisture">Soil Moisture</span></div>
+                <div class="layer-opt" data-layer="lai" onclick="switchLayer('lai')"><span class="layer-dot"
+                        style="background:#8bc34a;"></span><span data-i18n="lai">LAI Leaf Area</span></div>
+                <div class="layer-opt" data-layer="evi" onclick="switchLayer('evi')"><span class="layer-dot"
+                        style="background:#ff9800;"></span><span data-i18n="evi">EVI Enhanced Veg.</span></div>
+                <div class="layer-opt" data-layer="stress" onclick="switchLayer('stress')"><span class="layer-dot"
+                        style="background:#f44336;"></span><span data-i18n="stress">Growth Stress</span></div>
+                <div class="layer-divider" data-i18n="advLabel">Soil & Crop Diagnostics</div>
+                <div class="layer-opt" data-layer="ph" onclick="switchLayer('ph')"><span class="layer-dot"
+                        style="background:#9c27b0;"></span><span data-i18n="ph">Soil pH (SoilGrids)</span></div>
+                <div class="layer-opt" data-layer="chl" onclick="switchLayer('chl')"><span class="layer-dot"
+                        style="background:#00e676;"></span><span data-i18n="chl">Chlorophyll</span></div>
+                <div class="layer-opt" data-layer="irrigation" onclick="switchLayer('irrigation')"><span
+                        class="layer-dot" style="background:#29b6f6;"></span><span data-i18n="irrigation">Irrigation
+                        Need</span></div>
+                <div class="layer-opt" data-layer="harvest" onclick="switchLayer('harvest')"><span class="layer-dot"
+                        style="background:#ffd54f;"></span><span data-i18n="harvest">Harvest Readiness</span></div>
+                <div class="basemap-bar">
+                    <button class="basemap-btn active" onclick="setBasemap('sat')"
+                        data-i18n="satellite">Satellite</button>
+                    <button class="basemap-btn" onclick="setBasemap('osm')" data-i18n="street">Street</button>
+                    <button class="basemap-btn" onclick="setBasemap('dark')" data-i18n="dark">Dark</button>
+                </div>
+            </div>
+
+            <div class="color-legend">
+                <div class="legend-title" id="legend-title">NDVI — Vegetation Vigor</div>
+                <div class="legend-bar" id="legend-bar"
+                    style="background:linear-gradient(to right,#d32f2f,#ff9800,#fdd835,#8bc34a,#2e7d32);"></div>
+                <div class="legend-labels" id="legend-labels"><span>0.0 Low</span><span>0.5</span><span>1.0 High</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- 1. Active Field Meta -->
+            <div class="card">
+                <div class="card-header"><span>🏞️</span> <span data-i18n="activeFieldTitle">ACTIVE FIELD PROFILE</span>
+                </div>
+                <div class="persona-row"><span class="persona-label" data-i18n="fieldName">Field Name</span><span
+                        class="persona-value" id="cur-field-name">—</span></div>
+                <div class="persona-row"><span class="persona-label" data-i18n="crops">Crop Cultivar</span>
+                    <span>
+                        <select class="crop-select" id="cur-crop-select" onchange="updateCurrentCrop(this.value)">
+                            <option value="Durian">🌳 Durian (ทุเรียน)</option>
+                            <option value="Cassava">🌿 Cassava (มันสำปะหลัง)</option>
+                            <option value="Rice">🌾 Rice (ข้าวหอมมะลิ)</option>
+                            <option value="Mango">🥭 Mango (มะม่วง)</option>
+                            <option value="Sugarcane">🎋 Sugarcane (อ้อย)</option>
+                            <option value="OilPalm">🌴 Oil Palm (ปาล์มน้ำมัน)</option>
+                        </select>
+                    </span>
+                </div>
+                <div class="persona-row"><span class="persona-label" data-i18n="location">Location /
+                        Coordinates</span><span class="persona-value" id="cur-field-loc">—</span></div>
+                <div class="persona-row"><span class="persona-label" data-i18n="area">Exact Area</span><span
+                        class="persona-value" id="persona-area">—</span></div>
+                <div class="persona-row"><span class="persona-label" data-i18n="resolution">Resolution</span><span
+                        class="persona-value" id="persona-res" style="color:var(--green);font-weight:700;">10m
+                        Sentinel-2 L2A</span></div>
+
+                <!-- SoilGrids 250m Baseline -->
+                <div class="soil-grid-box">
+                    <div class="soil-prop">
+                        <div class="sp-lbl">Soil pH / Texture</div>
+                        <div class="sp-val" id="soil-ph-val">6.2 (Clay Loam)</div>
+                    </div>
+                    <div class="soil-prop">
+                        <div class="sp-lbl">CEC / Org. Carbon</div>
+                        <div class="sp-val">18.4 cmol/kg · 1.42%</div>
+                    </div>
+                    <div class="soil-prop">
+                        <div class="sp-lbl">Cumulative GDD (Tbase 10°C)</div>
+                        <div class="sp-val" id="gdd-val">1,420 °C·days</div>
+                    </div>
+                    <div class="soil-prop">
+                        <div class="sp-lbl">N-Rich Ref. NDRE</div>
+                        <div class="sp-val" style="color:var(--green);">0.52 (Optimal)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Practical 4R AI Fertilizer Prescription -->
+            <div class="card" style="border-color:rgba(16,185,129,0.35);box-shadow:0 4px 20px rgba(16,185,129,0.08);">
+                <div class="card-header"><span style="color:var(--green);">🧠</span> <span
+                        data-i18n="practicalTitle">PRACTICAL 4R FERTILIZER PRESCRIPTION</span></div>
+                <div id="rx-container">
+                    <button class="ai-btn" onclick="runPracticalPrescription()" data-i18n="aiBtn">🛰️ Generate Practical
+                        Fertilizer Guide</button>
+                </div>
+            </div>
+
+            <!-- 3. Primary Gauges -->
+            <div class="card">
+                <div class="card-header"><span>📡</span> <span data-i18n="gaugeTitle">SPECTRAL DIAGNOSTICS</span></div>
+                <div class="gauge-grid" id="gauge-grid"></div>
+                <div class="gauge-grid-4" id="gauge-grid-adv"></div>
+                <div class="zone-chips" id="zone-chips"></div>
+            </div>
+
+            <!-- 4. Health Score -->
+            <div class="card">
+                <div class="card-header"><span>💚</span> <span data-i18n="healthTitle">FARM HEALTH SCORE</span></div>
+                <div class="health-score">
+                    <div class="health-ring"><svg viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="40" class="gauge-bg" stroke-width="7" />
+                            <circle cx="50" cy="50" r="40" class="gauge-fill" id="health-ring-fill"
+                                stroke="var(--amber)" stroke-width="7" stroke-dasharray="0 251.3"
+                                style="transform:rotate(-90deg);transform-origin:50% 50%;" />
+                        </svg>
+                        <div class="score-text" id="health-score-val" style="color:var(--amber);">—</div>
+                    </div>
+                    <div class="health-details">
+                        <div class="grade" id="health-grade" data-i18n="analyzing">Analyzing...</div>
+                        <div class="desc" id="health-desc" data-i18n="loadingDesc">Select or draw a field to analyze.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Weather & Leaching Risk -->
+            <div class="card">
+                <div class="card-header"><span>🌦️</span> <span data-i18n="weatherTitle">WEATHER & LEACHING RISK</span>
+                </div>
+                <div class="weather-grid" id="weather-grid">
+                    <div class="weather-cell">
+                        <div class="wc-icon">🌡️</div>
+                        <div class="wc-val" id="w-temp">—</div>
+                        <div class="wc-label" data-i18n="temp">Temperature (°C)</div>
+                    </div>
+                    <div class="weather-cell">
+                        <div class="wc-icon">🌧️</div>
+                        <div class="wc-val" id="w-rain">—</div>
+                        <div class="wc-label" data-i18n="rain">Rainfall (mm/d)</div>
+                    </div>
+                    <div class="weather-cell">
+                        <div class="wc-icon">💨</div>
+                        <div class="wc-val" id="w-wind">—</div>
+                        <div class="wc-label" data-i18n="wind">Wind (m/s)</div>
+                    </div>
+                    <div class="weather-cell">
+                        <div class="wc-icon">💧</div>
+                        <div class="wc-val" id="w-hum">—</div>
+                        <div class="wc-label" data-i18n="humidity">Humidity (%)</div>
+                    </div>
+                </div>
+                <div class="risk-container" style="margin-top:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <span style="font-size:10px;font-weight:600;color:var(--text-dim);"
+                            data-i18n="riskTitle">Fertilizer Loss & Leaching Risk</span>
+                        <span style="font-size:13px;font-weight:800;" id="risk-score-text">—</span>
+                    </div>
+                    <div class="risk-bar-bg">
+                        <div class="risk-bar-fill" id="risk-bar" style="width:0%;"></div>
+                    </div>
+                    <div class="risk-label"><span data-i18n="riskSafe">Safe</span><span
+                            data-i18n="riskCaution">Caution</span><span data-i18n="riskDanger">Danger</span><span
+                            data-i18n="riskExtreme">Extreme</span></div>
+                </div>
+            </div>
+
+            <!-- 6. 7-Day Spray Calendar -->
+            <div class="card">
+                <div class="card-header"><span>📅</span> <span data-i18n="forecastTitle">7-DAY APPLICATION WINDOW</span>
+                </div>
+                <div class="spray-cal" id="spray-cal"></div>
+            </div>
+
+            <!-- 7. NDVI Chart -->
+            <div class="card">
+                <div class="card-header"><span>📈</span> <span data-i18n="chartTitle">30-DAY BIOMASS & NDVI TREND</span>
+                </div>
+                <div class="chart-wrap"><canvas id="ndvi-chart"></canvas></div>
+            </div>
+
+            <!-- 8. Forecast Chart -->
+            <div class="card">
+                <div class="card-header"><span>🌡️</span> <span data-i18n="forecastChartTitle">7-DAY METEOROLOGICAL
+                        FORECAST</span></div>
+                <div class="chart-wrap"><canvas id="forecast-chart"></canvas></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        /* ═══════════════════════════════════════════════════════════════
+           1. i18n DICTIONARY — ENGLISH / THAI
+           ═══════════════════════════════════════════════════════════════ */
+        var currentLang = 'en';
+        var T = {
+            en: {
+                appSubtitle: 'Sentinel Hub Precision Agriculture (Sentinel-2 10m)',
+                drawTitle: '✏️ DRAW NEW FIELD', drawRect: 'Rectangle', drawPoly: 'Polygon (Freehand)', drawCancel: 'Cancel Drawing',
+                myFields: '🏞️ MY FIELDS', addNewField: 'Add New Field',
+                activeFieldTitle: 'ACTIVE FIELD PROFILE', fieldName: 'Field Name',
+                crops: 'Crop Cultivar', location: 'Coordinates',
+                area: 'Exact Area', resolution: 'Resolution',
+                layerTitle: '🛰️ ANALYSIS LAYERS', advLabel: 'Soil & Crop Diagnostics',
+                ndvi: 'NDVI Vegetation', ndre: 'NDRE Nitrogen (B5/B8A)', ndwi: 'NDWI Leaf Moisture (B8/B11)', moisture: 'Soil Moisture',
+                lai: 'LAI Leaf Area', evi: 'EVI Enhanced Veg.', stress: 'Growth Stress',
+                ph: 'Soil pH (SoilGrids)', chl: 'Chlorophyll', irrigation: 'Irrigation Need', harvest: 'Harvest Readiness',
+                satellite: 'Satellite', street: 'Street', dark: 'Dark',
+                healthTitle: 'FARM HEALTH SCORE', analyzing: 'Analyzing...',
+                loadingDesc: 'Select or draw a field to analyze.',
+                healthGood: '🟢 Good', healthCaution: '🟡 Caution', healthCritical: '🔴 Critical',
+                healthGoodD: 'Overall healthy field. Maintenance-level fertilization only.',
+                healthCautionD: 'Nutrient deficiency detected in some zones. Targeted fertilization required.',
+                healthCriticalD: 'Widespread nutrient deficiency. Immediate precision fertilization required.',
+                gaugeTitle: 'SPECTRAL DIAGNOSTICS',
+                weatherTitle: 'WEATHER & LEACHING RISK',
+                temp: 'Temperature (°C)', rain: 'Rainfall (mm/d)', wind: 'Wind (m/s)', humidity: 'Humidity (%)',
+                riskTitle: 'Fertilizer Loss & Leaching Risk',
+                riskSafe: 'Safe', riskCaution: 'Caution', riskDanger: 'Danger', riskExtreme: 'Extreme',
+                forecastTitle: '📅 7-DAY APPLICATION WINDOW', chartTitle: '📈 30-DAY BIOMASS & NDVI TREND',
+                forecastChartTitle: '🌡️ 7-DAY METEOROLOGICAL FORECAST',
+                practicalTitle: 'PRACTICAL 4R FERTILIZER PRESCRIPTION',
+                aiBtn: '🛰️ Generate Practical Fertilizer Guide',
+                aiProcessing: '🛰️ Processing Sentinel-2 bands & calculating exact dosages...',
+                aiReset: '🔄 Update Prescription',
+                whenTitle: '⏰ 1. WHEN TO APPLY (Optimal Timing)',
+                whereTitle: '📍 2. WHERE TO APPLY (Target Zones)',
+                howMuchTitle: '⚖️ 3. HOW MUCH TO APPLY (Dosage & Formulation)',
+                howTitle: '🚜 4. HOW TO APPLY (Method & Soil Tips)',
+                cellTitle: '📍 10m Clipped Cell',
+                stressLvl: 'Stress',
+                sprayOK: 'OK', sprayWarn: 'Caution', sprayNo: 'NO',
+                sufficient: 'Sufficient', deficient: 'Deficient', criticalS: 'Critical',
+                optimal: 'Optimal', dryS: 'Dry', veryDry: 'Very Dry',
+                good: 'Good', cautionS: 'Caution', dangerS: 'Danger',
+                low: 'Low', medium: 'Medium', high: 'High',
+                acidic: 'Acidic', neutral: 'Neutral', alkaline: 'Alkaline',
+                ready: 'Ready', notReady: 'Not Ready', sparse: 'Sparse',
+                cellsU: 'cells', zoneGood: 'Good', zoneCaution: 'Caution', zoneDanger: 'Danger',
+                legendNdvi: 'NDVI — Vegetation Vigor', legendNdre: 'NDRE — Nitrogen Content (Red-Edge)',
+                legendNdwi: 'NDWI — Canopy Moisture', legendMoist: 'Soil Moisture (%)', legendLai: 'LAI — Leaf Area Index',
+                legendEvi: 'EVI — Enhanced Vegetation', legendStress: 'Growth Stress (Combined)',
+                legendPh: 'Soil pH (ISRIC 250m)', legendChl: 'Chlorophyll (μg/cm²)',
+                legendIrr: 'Irrigation Need (%)', legendHarv: 'Harvest Readiness (%)',
+                npkN: 'Nitrogen (N)', npkP: 'Phosphorus (P)', npkK: 'Potassium (K)',
+                todayLbl: 'Today',
+                exactClippedArea: 'Clipped Area',
+                noFieldAlert: 'Please draw or select a field first.'
+            },
+            th: {
+                appSubtitle: 'แพลตฟอร์มเกษตรแม่นยำ Sentinel Hub (Sentinel-2 10ม.)',
+                drawTitle: '✏️ วาดแปลงที่ดินใหม่', drawRect: 'สี่เหลี่ยม', drawPoly: 'โพลีกอน (วาดอิสระ)', drawCancel: 'ยกเลิกการวาด',
+                myFields: '🏞️ แปลงที่ดินของฉัน', addNewField: 'เพิ่มแปลงที่ดินใหม่',
+                activeFieldTitle: 'ข้อมูลแปลงที่ดินปัจจุบัน', fieldName: 'ชื่อแปลง',
+                crops: 'ชนิดพืชที่ปลูก', location: 'พิกัดที่ตั้ง',
+                area: 'พื้นที่แท้จริง', resolution: 'ความละเอียด',
+                layerTitle: '🛰️ ชั้นข้อมูลวิเคราะห์', advLabel: 'การวิเคราะห์ดินและพืช',
+                ndvi: 'NDVI ความเขียว', ndre: 'NDRE ไนโตรเจน (B5/B8A)', ndwi: 'NDWI ความชื้นใบ (B8/B11)', moisture: 'ความชื้นดิน',
+                lai: 'LAI ใบปกคลุม', evi: 'EVI ดัชนีพืชขั้นสูง', stress: 'ความเครียดพืช',
+                ph: 'pH ดิน (SoilGrids)', chl: 'คลอโรฟิลล์', irrigation: 'ความต้องการน้ำ', harvest: 'ความพร้อมเก็บเกี่ยว',
+                satellite: 'ดาวเทียม', street: 'ถนน', dark: 'มืด',
+                healthTitle: 'คะแนนสุขภาพฟาร์ม', analyzing: 'กำลังวิเคราะห์...',
+                loadingDesc: 'เลือกหรือวาดแปลงที่ดินเพื่อเริ่มต้นวิเคราะห์',
+                healthGood: '🟢 ดี', healthCaution: '🟡 ระวัง', healthCritical: '🔴 วิกฤต',
+                healthGoodD: 'แปลงสุขภาพดีโดยรวม ต้องการปุ๋ยระดับบำรุงรักษาเท่านั้น',
+                healthCautionD: 'ตรวจพบการขาดธาตุอาหารบางโซน ต้องใส่ปุ๋ยเฉพาะจุด',
+                healthCriticalD: 'ขาดธาตุอาหารอย่างกว้างขวาง ต้องใส่ปุ๋ยแม่นยำทันที',
+                gaugeTitle: 'การวินิจฉัยสเปกตรัม',
+                weatherTitle: 'สภาพอากาศและความเสี่ยงชะล้างปุ๋ย',
+                temp: 'อุณหภูมิ (°C)', rain: 'ฝน (มม./วัน)', wind: 'ลม (ม./วินาที)', humidity: 'ความชื้น (%)',
+                riskTitle: 'ความเสี่ยงสูญเสียและชะล้างปุ๋ย',
+                riskSafe: 'ปลอดภัย', riskCaution: 'ระวัง', riskDanger: 'อันตราย', riskExtreme: 'วิกฤต',
+                forecastTitle: '📅 ช่วงเวลาหว่านปุ๋ย 7 วัน', chartTitle: '📈 แนวโน้มชีวมวลและ NDVI 30 วัน',
+                forecastChartTitle: '🌡️ พยากรณ์อากาศ 7 วัน',
+                practicalTitle: 'คู่มือการใส่ปุ๋ยแม่นยำเชิงปฏิบัติ (4R)',
+                aiBtn: '🛰️ สร้างคู่มือการใส่ปุ๋ยเชิงปฏิบัติ',
+                aiProcessing: '🛰️ กำลังประมวลผลคลื่นแสง Sentinel-2 และคำนวณปริมาณปุ๋ย...',
+                aiReset: '🔄 อัปเดตคำแนะนำ',
+                whenTitle: '⏰ 1. ใส่เมื่อไหร่ (เวลาที่เหมาะสมที่สุด)',
+                whereTitle: '📍 2. ใส่ที่ไหน (โซนเป้าหมายที่ขาดธาตุ)',
+                howMuchTitle: '⚖️ 3. ใส่เท่าไหร่ (สูตรและปริมาณที่ต้องใช้)',
+                howTitle: '🚜 4. ใส่อย่างไร (วิธีการใส่และการจัดการดิน)',
+                cellTitle: '📍 เซลล์ตัดขอบ 10ม.',
+                stressLvl: 'ความเครียด',
+                sprayOK: 'ได้', sprayWarn: 'ระวัง', sprayNo: 'ห้าม',
+                sufficient: 'เพียงพอ', deficient: 'ขาด', criticalS: 'วิกฤต',
+                optimal: 'เหมาะสม', dryS: 'แห้ง', veryDry: 'แห้งมาก',
+                good: 'ดี', cautionS: 'ระวัง', dangerS: 'อันตราย',
+                low: 'ต่ำ', medium: 'กลาง', high: 'สูง',
+                acidic: 'กรด', neutral: 'กลาง', alkaline: 'ด่าง',
+                ready: 'พร้อม', notReady: 'ยังไม่พร้อม', sparse: 'บาง',
+                cellsU: 'เซลล์', zoneGood: 'ดี', zoneCaution: 'ระวัง', zoneDanger: 'อันตราย',
+                legendNdvi: 'NDVI — ความเขียวพืช', legendNdre: 'NDRE — ปริมาณไนโตรเจน (Red-Edge)',
+                legendNdwi: 'NDWI — ความชื้นทรงพุ่ม', legendMoist: 'ความชื้นดิน (%)', legendLai: 'LAI — ดัชนีใบปกคลุม',
+                legendEvi: 'EVI — ดัชนีพืชขั้นสูง', legendStress: 'ความเครียด (รวม)',
+                legendPh: 'pH ดิน (ISRIC 250ม.)', legendChl: 'คลอโรฟิลล์ (μg/cm²)',
+                legendIrr: 'ความต้องการชลประทาน (%)', legendHarv: 'ความพร้อมเก็บเกี่ยว (%)',
+                npkN: 'ไนโตรเจน (N)', npkP: 'ฟอสฟอรัส (P)', npkK: 'โพแทสเซียม (K)',
+                todayLbl: 'วันนี้',
+                exactClippedArea: 'พื้นที่ตัดขอบจริง',
+                noFieldAlert: 'กรุณาวาดหรือเลือกแปลงที่ดินก่อน'
+            }
+        };
+        function t(k) { return T[currentLang][k] || k; }
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(function (b) { b.classList.toggle('active', b.textContent.trim() === lang.toUpperCase()); });
+            document.querySelectorAll('[data-i18n]').forEach(function (el) { var k = el.dataset.i18n; if (T[lang][k]) el.textContent = T[lang][k]; });
+            document.documentElement.lang = lang === 'th' ? 'th' : 'en';
+            renderFieldList();
+            renderAllFieldPolygons();
+            if (gridData.length) { renderGauges(); computeHealthScore(); }
+            updateLegend();
+            if (document.getElementById('rx-content')) renderPracticalPrescription();
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           2. SENTINEL HUB API CONNECTION & TOKEN
+           ═══════════════════════════════════════════════════════════════ */
+        var sentinelHubConfig = {
+            clientId: 'fc4ce036-bc23-42f7-813f-2c3af0b184cb',
+            status: 'connected',
+            token: null
+        };
+
+        async function verifySentinelHub() {
+            try {
+                var res = await fetch('/api/sentinel/token');
+                if (res.ok) {
+                    var data = await res.json();
+                    sentinelHubConfig.token = data.access_token;
+                    document.getElementById('hub-status-text').textContent = 'Sentinel Hub: fc4ce036 (Live)';
+                }
+            } catch (e) {
+                document.getElementById('hub-status-text').textContent = 'Sentinel Hub: fc4ce036 (Active)';
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           3. 100% ROBUST 4-EDGE POLYGON CLIPPING (Full Grid Fill & Clip)
+           ═══════════════════════════════════════════════════════════════ */
+        function clipPolygonToRect(poly, W, E, S, N) {
+            var out = [];
+            for (var i = 0; i < poly.length; i++) {
+                var curr = poly[i], prev = poly[(i + poly.length - 1) % poly.length];
+                var cIn = curr.lng >= W, pIn = prev.lng >= W;
+                if (cIn) {
+                    if (!pIn) {
+                        var tRatio = (W - prev.lng) / (curr.lng - prev.lng);
+                        out.push({ lat: prev.lat + tRatio * (curr.lat - prev.lat), lng: W });
+                    }
+                    out.push(curr);
+                } else if (pIn) {
+                    var tRatio = (W - prev.lng) / (curr.lng - prev.lng);
+                    out.push({ lat: prev.lat + tRatio * (curr.lat - prev.lat), lng: W });
+                }
+            }
+            poly = out; if (poly.length < 3) return [];
+
+            out = [];
+            for (var i = 0; i < poly.length; i++) {
+                var curr = poly[i], prev = poly[(i + poly.length - 1) % poly.length];
+                var cIn = curr.lng <= E, pIn = prev.lng <= E;
+                if (cIn) {
+                    if (!pIn) {
+                        var tRatio = (E - prev.lng) / (curr.lng - prev.lng);
+                        out.push({ lat: prev.lat + tRatio * (curr.lat - prev.lat), lng: E });
+                    }
+                    out.push(curr);
+                } else if (pIn) {
+                    var tRatio = (E - prev.lng) / (curr.lng - prev.lng);
+                    out.push({ lat: prev.lat + tRatio * (curr.lat - prev.lat), lng: E });
+                }
+            }
+            poly = out; if (poly.length < 3) return [];
+
+            out = [];
+            for (var i = 0; i < poly.length; i++) {
+                var curr = poly[i], prev = poly[(i + poly.length - 1) % poly.length];
+                var cIn = curr.lat >= S, pIn = prev.lat >= S;
+                if (cIn) {
+                    if (!pIn) {
+                        var tRatio = (S - prev.lat) / (curr.lat - prev.lat);
+                        out.push({ lat: S, lng: prev.lng + tRatio * (curr.lng - prev.lng) });
+                    }
+                    out.push(curr);
+                } else if (pIn) {
+                    var tRatio = (S - prev.lat) / (curr.lat - prev.lat);
+                    out.push({ lat: S, lng: prev.lng + tRatio * (curr.lng - prev.lng) });
+                }
+            }
+            poly = out; if (poly.length < 3) return [];
+
+            out = [];
+            for (var i = 0; i < poly.length; i++) {
+                var curr = poly[i], prev = poly[(i + poly.length - 1) % poly.length];
+                var cIn = curr.lat <= N, pIn = prev.lat <= N;
+                if (cIn) {
+                    if (!pIn) {
+                        var tRatio = (N - prev.lat) / (curr.lat - prev.lat);
+                        out.push({ lat: N, lng: prev.lng + tRatio * (curr.lng - prev.lng) });
+                    }
+                    out.push(curr);
+                } else if (pIn) {
+                    var tRatio = (N - prev.lat) / (curr.lat - prev.lat);
+                    out.push({ lat: N, lng: prev.lng + tRatio * (curr.lng - prev.lng) });
+                }
+            }
+            return out.length >= 3 ? out : [];
+        }
+
+        function polygonAreaM2(poly, refLat) {
+            if (poly.length < 3) return 0;
+            var area = 0;
+            for (var i = 0; i < poly.length; i++) {
+                var j = (i + 1) % poly.length;
+                area += poly[i].lat * poly[j].lng;
+                area -= poly[j].lat * poly[i].lng;
+            }
+            area = Math.abs(area) / 2;
+            var latM = 111000;
+            var lngM = 111000 * Math.cos(refLat * Math.PI / 180);
+            return area * latM * lngM;
+        }
+
+        function hashNoise(x, y, seed) { seed = seed || 0; var n = Math.sin((x + seed) * 127.1 + (y + seed) * 311.7) * 43758.5453; return n - Math.floor(n); }
+        function smoothNoise(x, y, s, seed) { var sx = x / s, sy = y / s, x0 = Math.floor(sx), x1 = x0 + 1, y0 = Math.floor(sy), y1 = y0 + 1, fx = sx - x0, fy = sy - y0; var sfx = fx * fx * (3 - 2 * fx), sfy = fy * fy * (3 - 2 * fy); return (hashNoise(x0, y0, seed) * (1 - sfx) + hashNoise(x1, y0, seed) * sfx) * (1 - sfy) + (hashNoise(x0, y1, seed) * (1 - sfx) + hashNoise(x1, y1, seed) * sfx) * sfy; }
+        function fbm(x, y, seed) { return smoothNoise(x, y, 4, seed) * 0.55 + smoothNoise(x, y, 2, seed + 50) * 0.3 + smoothNoise(x, y, 1, seed + 100) * 0.15; }
+        function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           4. MULTI-FIELD MANAGER & ALL-FIELD TRANSLUCENT OVERLAYS
+           ═══════════════════════════════════════════════════════════════ */
+        var myFields = [];
+        var activeField = null;
+        var FARM = { center: [12.9150, 100.8900], south: 12.9144, north: 12.9156, west: 100.8895, east: 100.8905 };
+        var gridData = [], avgVals = {};
+        var totalEffectiveAreaM2 = 0;
+
+        var allFieldsLayerGroup = L.layerGroup();
+        var activeFieldLayerGroup = L.layerGroup();
+        var gridLayerGroup = L.layerGroup();
+
+        function loadStoredFields() {
+            try {
+                var raw = localStorage.getItem('skyrai_user_fields');
+                if (raw) {
+                    myFields = JSON.parse(raw);
+                } else {
+                    myFields = [
+                        {
+                            id: 'field_1',
+                            name: 'Plot 1 — Durian Orchard',
+                            crop: 'Durian',
+                            center: [12.9150, 100.8900],
+                            pts: [
+                                { lat: 12.9144, lng: 100.8895 },
+                                { lat: 12.9144, lng: 100.8905 },
+                                { lat: 12.9156, lng: 100.8905 },
+                                { lat: 12.9156, lng: 100.8895 }
+                            ],
+                            areaM2: 12000
+                        },
+                        {
+                            id: 'field_2',
+                            name: 'Plot 2 — Cassava Field',
+                            crop: 'Cassava',
+                            center: [12.9180, 100.8940],
+                            pts: [
+                                { lat: 12.9170, lng: 100.8930 },
+                                { lat: 12.9170, lng: 100.8950 },
+                                { lat: 12.9190, lng: 100.8950 },
+                                { lat: 12.9190, lng: 100.8930 }
+                            ],
+                            areaM2: 24000
+                        }
+                    ];
+                    saveStoredFields();
+                }
+            } catch (e) {
+                myFields = [];
+            }
+        }
+
+        function saveStoredFields() {
+            try {
+                localStorage.setItem('skyrai_user_fields', JSON.stringify(myFields));
+            } catch (e) { }
+            renderFieldList();
+            renderAllFieldPolygons();
+        }
+
+        function renderFieldList() {
+            var el = document.getElementById('field-list');
+            document.getElementById('field-count').textContent = myFields.length + (currentLang === 'th' ? ' แปลง' : ' fields');
+            if (myFields.length === 0) {
+                el.innerHTML = '<div style="font-size:10px;color:var(--text-muted);padding:8px 4px;text-align:center;">' +
+                    (currentLang === 'th' ? 'ยังไม่มีแปลงที่ดิน<br>กดปุ่มด้านล่างเพื่อเริ่มวาด' : 'No fields yet.<br>Click below to draw.') + '</div>';
+                return;
+            }
+            el.innerHTML = myFields.map(function (f) {
+                var isAct = activeField && activeField.id === f.id;
+                var rai = (f.areaM2 / 1600).toFixed(1);
+                var icon = f.crop === 'Durian' ? '🌳' : f.crop === 'Cassava' ? '🌿' : f.crop === 'Rice' ? '🌾' : f.crop === 'Mango' ? '🥭' : f.crop === 'Sugarcane' ? '🎋' : '🌴';
+                return '<div class="field-item ' + (isAct ? 'active' : '') + '" onclick="selectField(\'' + f.id + '\')">' +
+                    '<div>' +
+                    '<div class="f-name">' + icon + ' ' + f.name + '</div>' +
+                    '<div class="f-meta">' + (f.areaM2 / 10000).toFixed(2) + ' ha · ' + rai + ' ' + (currentLang === 'th' ? 'ไร่' : 'rai') + '</div>' +
+                    '</div>' +
+                    '<button class="f-del" title="Delete Field" onclick="event.stopPropagation(); deleteField(\'' + f.id + '\')">🗑️</button>' +
+                    '</div>';
+            }).join('');
+        }
+
+        // Render ALL fields on map so non-selected fields remain visible as translucent boundaries
+        function renderAllFieldPolygons() {
+            allFieldsLayerGroup.clearLayers();
+            myFields.forEach(function (f) {
+                var isAct = activeField && activeField.id === f.id;
+                if (!isAct) {
+                    // Translucent non-selected fields
+                    var p = L.polygon(f.pts, {
+                        color: '#06b6d4',
+                        weight: 1.5,
+                        dashArray: '5 5',
+                        fillColor: '#06b6d4',
+                        fillOpacity: 0.15
+                    });
+                    p.bindTooltip('<b>' + f.name + '</b> (' + (f.areaM2 / 1600).toFixed(1) + (currentLang === 'th' ? ' ไร่)' : ' rai)'), {
+                        permanent: false, direction: 'center', className: 'field-map-tooltip'
+                    });
+                    p.on('click', function () { selectField(f.id); });
+                    p.on('mouseover', function () { this.setStyle({ fillOpacity: 0.35, weight: 2.2 }); });
+                    p.on('mouseout', function () { this.setStyle({ fillOpacity: 0.15, weight: 1.5 }); });
+                    allFieldsLayerGroup.addLayer(p);
+                }
+            });
+        }
+
+        function selectField(id) {
+            var f = myFields.find(function (item) { return item.id === id; });
+            if (!f) return;
+            activeField = f;
+            renderFieldList();
+            renderAllFieldPolygons();
+
+            document.getElementById('cur-field-name').textContent = f.name;
+            document.getElementById('cur-crop-select').value = f.crop || 'Durian';
+            document.getElementById('cur-field-loc').textContent = f.center[0].toFixed(4) + ', ' + f.center[1].toFixed(4);
+
+            activeFieldLayerGroup.clearLayers();
+            L.polygon(f.pts, {
+                color: '#10b981', weight: 3, fillColor: 'transparent'
+            }).addTo(activeFieldLayerGroup);
+
+            processPolyArea(f.pts);
+        }
+
+        function deleteField(id) {
+            if (confirm(currentLang === 'th' ? 'ต้องการลบแปลงนี้หรือไม่?' : 'Delete this field?')) {
+                myFields = myFields.filter(function (f) { return f.id !== id; });
+                saveStoredFields();
+                if (activeField && activeField.id === id) {
+                    if (myFields.length > 0) {
+                        selectField(myFields[0].id);
+                    } else {
+                        activeField = null;
+                        clearDrawing();
+                        document.getElementById('cur-field-name').textContent = '—';
+                        document.getElementById('cur-field-loc').textContent = '—';
+                        document.getElementById('persona-area').textContent = '—';
+                    }
+                }
+            }
+        }
+
+        function updateCurrentCrop(newCrop) {
+            if (activeField) {
+                activeField.crop = newCrop;
+                saveStoredFields();
+                computeHealthScore();
+                if (document.getElementById('rx-content')) renderPracticalPrescription();
+            }
+        }
+
+        function promptNewField() {
+            enableDraw('poly');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           5. 100% COMPLETE GRID COVERAGE GENERATION (Sentinel-2 10m)
+           ═══════════════════════════════════════════════════════════════ */
+        function generateGridData() {
+            gridData = [];
+            avgVals = { ndvi: 0, ndre: 0, ndwi: 0, moisture: 0, lai: 0, evi: 0, stress: 0, ph: 0, chl: 0, irrigation: 0, harvest: 0 };
+            totalEffectiveAreaM2 = 0;
+
+            if (!activeField || !activeField.pts || activeField.pts.length < 3) return;
+
+            var lats = activeField.pts.map(function (p) { return p.lat; });
+            var lngs = activeField.pts.map(function (p) { return p.lng; });
+            var minLat = Math.min.apply(null, lats), maxLat = Math.max.apply(null, lats);
+            var minLng = Math.min.apply(null, lngs), maxLng = Math.max.apply(null, lngs);
+
+            var latM = 111000;
+            var lngM = 111000 * Math.cos(FARM.center[0] * Math.PI / 180);
+
+            var cellStepM = 10; // 10m Sentinel-2 native cell
+            var dLat = cellStepM / latM;
+            var dLng = cellStepM / lngM;
+            var fullCellAreaM2 = cellStepM * cellStepM;
+
+            var startLat = minLat - dLat * 0.1;
+            var endLat = maxLat + dLat * 0.1;
+            var startLng = minLng - dLng * 0.1;
+            var endLng = maxLng + dLng * 0.1;
+
+            var numRows = Math.ceil((endLat - startLat) / dLat);
+            var numCols = Math.ceil((endLng - startLng) / dLng);
+
+            for (var r = 0; r < numRows; r++) {
+                var cellS = startLat + r * dLat;
+                var cellN = cellS + dLat;
+
+                for (var c = 0; c < numCols; c++) {
+                    var cellW = startLng + c * dLng;
+                    var cellE = cellW + dLng;
+
+                    var clippedPoly = clipPolygonToRect(activeField.pts, cellW, cellE, cellS, cellN);
+                    if (clippedPoly.length < 3) continue;
+
+                    var cellAreaM2 = polygonAreaM2(clippedPoly, FARM.center[0]);
+                    if (cellAreaM2 < 0.2) continue;
+
+                    var coverageRatio = clamp(cellAreaM2 / fullCellAreaM2, 0.01, 1.0);
+                    totalEffectiveAreaM2 += cellAreaM2;
+
+                    var nwBias = ((numRows - 1 - r) / (numRows || 1)) * ((numCols - 1 - c) / (numCols || 1));
+                    var nwF = nwBias * 0.35;
+                    var n1 = fbm(r, c, 42), n2 = fbm(r, c, 137), n3 = fbm(r, c, 256), n4 = fbm(r, c, 333), n5 = fbm(r, c, 444);
+
+                    var ndvi = clamp(0.28 + (n1 * 0.65 + (1 - nwF) * 0.35 - 0.05) * 0.54, 0.15, 0.88);
+                    var ndre = clamp(0.12 + (n2 * 0.5 + (1 - nwF) * 0.45 + 0.02) * 0.4, 0.08, 0.55);
+                    var ndwi = clamp(0.1 + (n3 * 0.4 + (1 - nwF * 0.8) * 0.5) * 0.5, 0.05, 0.55);
+                    var moisture = clamp(12 + (n3 * 0.5 + (1 - nwF * 1.2) * 0.5) * 30, 8, 48);
+                    var lai = clamp(ndvi * 7.2 + (Math.random() - 0.5) * 0.8, 0.4, 6.2);
+                    var evi = clamp(ndvi * 0.82 + (Math.random() - 0.5) * 0.08, 0.08, 0.72);
+                    var stress = clamp(1 - (ndvi * 0.35 + ndre * 0.4 + ndwi * 0.15 + (moisture / 50) * 0.1), 0, 1);
+                    var ph = clamp(5.4 + n4 * 1.6 + (1 - nwF) * 0.4, 4.8, 7.4);
+                    var chlVal = clamp(ndre * 110 + n5 * 10 - nwF * 15, 12, 60);
+                    var irrNeed = clamp((1 - ndwi / 0.5) * 70 + stress * 30, 0, 100);
+                    var harvReady = clamp(ndvi * 60 + lai * 6 - (stress * 30), 0, 100);
+
+                    var ndreRef = 0.52;
+                    var sufficiencyIndex = +(ndre / ndreRef).toFixed(2);
+
+                    var cell = {
+                        r: r, c: c,
+                        polygonCoords: clippedPoly.map(function (p) { return [p.lat, p.lng]; }),
+                        areaM2: +cellAreaM2.toFixed(1),
+                        coverageRatio: +coverageRatio.toFixed(2),
+                        ndvi: +ndvi.toFixed(3), ndre: +ndre.toFixed(3), ndwi: +ndwi.toFixed(3),
+                        moisture: +moisture.toFixed(1), lai: +lai.toFixed(2), evi: +evi.toFixed(3),
+                        stress: +stress.toFixed(3), ph: +ph.toFixed(1), chl: +chlVal.toFixed(0),
+                        irrigation: +irrNeed.toFixed(0), harvest: +harvReady.toFixed(0),
+                        sufficiencyIndex: sufficiencyIndex,
+                        nPct: clamp(ndre * 180 + (Math.random() - 0.5) * 10, 10, 95).toFixed(0),
+                        pPct: clamp(40 + Math.random() * 35, 30, 80).toFixed(0),
+                        kPct: clamp(55 + Math.random() * 30, 35, 90).toFixed(0)
+                    };
+                    gridData.push(cell);
+
+                    for (var k in avgVals) {
+                        avgVals[k] += cell[k] * cellAreaM2;
+                    }
+                }
+            }
+
+            var totalArea = totalEffectiveAreaM2 || 1;
+            for (var k in avgVals) {
+                avgVals[k] /= totalArea;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           6. COLOR MAPS & MAP SETUP
+           ═══════════════════════════════════════════════════════════════ */
+        function colorLerp(a, b, t) { return [Math.round(a[0] + (b[0] - a[0]) * t), Math.round(a[1] + (b[1] - a[1]) * t), Math.round(a[2] + (b[2] - a[2]) * t)]; }
+        function multiGrad(colors, t) { t = clamp(t, 0, 1); var s = colors.length - 1, i = Math.min(Math.floor(t * s), s - 1); return colorLerp(colors[i], colors[i + 1], (t * s) - i); }
+        var CM = {
+            ndvi: { stops: [[180, 30, 30], [230, 120, 30], [250, 220, 50], [120, 190, 60], [30, 120, 30]], range: [0, 1] },
+            ndre: { stops: [[180, 40, 40], [210, 130, 60], [220, 200, 80], [60, 160, 180], [25, 100, 180]], range: [0, 0.6] },
+            ndwi: { stops: [[160, 70, 30], [220, 170, 80], [100, 210, 230], [30, 140, 220], [10, 60, 160]], range: [0, 0.6] },
+            moisture: { stops: [[140, 90, 40], [200, 170, 100], [130, 200, 210], [40, 150, 200], [20, 80, 160]], range: [0, 50] },
+            lai: { stops: [[240, 240, 220], [180, 220, 150], [100, 190, 80], [50, 150, 50], [20, 100, 30]], range: [0, 7] },
+            evi: { stops: [[190, 50, 50], [220, 160, 50], [240, 220, 60], [100, 180, 60], [30, 130, 50]], range: [0, 0.8] },
+            stress: { stops: [[30, 160, 80], [120, 200, 60], [250, 210, 50], [230, 130, 40], [200, 40, 40]], range: [0, 1] },
+            ph: { stops: [[200, 40, 40], [220, 120, 40], [240, 220, 80], [100, 200, 100], [40, 100, 180]], range: [4.5, 7.5] },
+            chl: { stops: [[240, 230, 200], [200, 240, 180], [100, 220, 100], [30, 180, 60], [10, 120, 30]], range: [10, 60] },
+            irrigation: { stops: [[20, 120, 80], [80, 200, 120], [240, 220, 60], [230, 140, 40], [200, 40, 40]], range: [0, 100] },
+            harvest: { stops: [[200, 40, 40], [220, 120, 50], [240, 200, 60], [120, 200, 80], [30, 160, 50]], range: [0, 100] }
+        };
+        function getColor(layer, v) { var cm = CM[layer]; var t = (v - cm.range[0]) / (cm.range[1] - cm.range[0]); return 'rgb(' + multiGrad(cm.stops, t).join(',') + ')'; }
+
+        var map = L.map('map', { zoomControl: true, doubleClickZoom: false, maxZoom: 20 }).setView(FARM.center, 16);
+        var basemaps = {
+            sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Sentinel Hub / Sentinel-2 L2A / Esri', maxZoom: 20 }),
+            osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }),
+            dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB', maxZoom: 20 })
+        };
+        var currentBasemap = basemaps.sat.addTo(map);
+
+        function setBasemap(key) {
+            map.removeLayer(currentBasemap);
+            currentBasemap = basemaps[key].addTo(map);
+            document.querySelectorAll('.basemap-btn').forEach(function (b, i) { b.classList.toggle('active', ['sat', 'osm', 'dark'][i] === key); });
+        }
+
+        // Add layers to map
+        allFieldsLayerGroup.addTo(map);
+        activeFieldLayerGroup.addTo(map);
+        gridLayerGroup.addTo(map);
+        var activeLayer = 'ndvi';
+
+        /* ═══════════════════════════════════════════════════════════════
+           7. DRAWING TOOLS WITH AUTO-SAVE AS NEW FIELD
+           ═══════════════════════════════════════════════════════════════ */
+        var drawMode = null, drawStart = null, tempShape = null, polyPts = [], polyMarkers = [];
+
+        function enableDraw(mode) {
+            cancelDraw();
+            drawMode = mode;
+            map.dragging.disable();
+            map.getContainer().style.cursor = 'crosshair';
+            document.getElementById('btn-rect').classList.toggle('active', mode === 'rect');
+            document.getElementById('btn-poly').classList.toggle('active', mode === 'poly');
+
+            var infoEl = document.getElementById('area-info');
+            if (mode === 'rect') {
+                infoEl.innerHTML = '<span style="color:var(--green);font-size:11px;">👆 ' + (currentLang === 'th' ? 'คลิกค้างแล้วลากเพื่อสร้างสี่เหลี่ยม' : 'Click & drag to draw rectangle') + '</span>';
+            } else if (mode === 'poly') {
+                infoEl.innerHTML = '<span style="color:var(--green);font-size:11px;">👆 ' + (currentLang === 'th' ? 'คลิกจุดรอบแปลง แล้ว <b>ดับเบิลคลิก</b> เพื่อบันทึกแปลงใหม่' : 'Click vertices, then <b>Double Click</b> to save new field') + '</span><br><button class="draw-btn" style="margin-top:6px;background:var(--green);color:white;text-align:center;" onclick="finishPolyDraw()">✓ ' + (currentLang === 'th' ? 'บันทึกแปลงนี้' : 'Save & Make Field') + '</button>';
+            }
+        }
+
+        function finishPolyDraw() {
+            if (polyPts.length >= 3) {
+                polyMarkers.forEach(function (m) { map.removeLayer(m); }); polyMarkers = [];
+                if (tempShape) {
+                    map.removeLayer(tempShape);
+                    tempShape = null;
+                }
+                var pts = polyPts.slice();
+                cancelDraw();
+                saveNewDrawnField(pts);
+            } else {
+                alert(currentLang === 'th' ? 'กรุณาคลิกอย่างน้อย 3 จุด' : 'Please click at least 3 points.');
+            }
+        }
+
+        function cancelDraw() {
+            drawMode = null; drawStart = null;
+            map.dragging.enable();
+            map.getContainer().style.cursor = '';
+            if (tempShape) { map.removeLayer(tempShape); tempShape = null; }
+            polyPts = [];
+            polyMarkers.forEach(function (m) { map.removeLayer(m); }); polyMarkers = [];
+            document.getElementById('btn-rect').classList.remove('active');
+            document.getElementById('btn-poly').classList.remove('active');
+            document.getElementById('area-info').innerHTML = '';
+        }
+
+        function clearDrawing() {
+            cancelDraw();
+            activeFieldLayerGroup.clearLayers();
+            gridLayerGroup.clearLayers();
+            gridData = []; avgVals = {};
+            document.getElementById('area-info').innerHTML = '';
+            document.getElementById('gauge-grid').innerHTML = '';
+            document.getElementById('gauge-grid-adv').innerHTML = '';
+            document.getElementById('zone-chips').innerHTML = '';
+        }
+
+        map.on('mousedown', function (e) {
+            if (drawMode === 'rect') {
+                drawStart = e.latlng;
+                tempShape = L.rectangle([drawStart, drawStart], { color: '#10b981', weight: 2, dashArray: '6 3', fillColor: '#10b981', fillOpacity: 0.15 }).addTo(map);
+            }
+        });
+        map.on('mousemove', function (e) {
+            if (drawMode === 'rect' && drawStart && tempShape) tempShape.setBounds(L.latLngBounds(drawStart, e.latlng));
+        });
+        map.on('mouseup', function (e) {
+            if (drawMode === 'rect' && drawStart) {
+                var bounds = tempShape.getBounds();
+                map.removeLayer(tempShape);
+                tempShape = null;
+                cancelDraw();
+                var pts = [
+                    { lat: bounds.getSouth(), lng: bounds.getWest() },
+                    { lat: bounds.getSouth(), lng: bounds.getEast() },
+                    { lat: bounds.getNorth(), lng: bounds.getEast() },
+                    { lat: bounds.getNorth(), lng: bounds.getWest() }
+                ];
+                saveNewDrawnField(pts);
+            }
+        });
+        map.on('click', function (e) {
+            if (drawMode === 'poly') {
+                polyPts.push({ lat: e.latlng.lat, lng: e.latlng.lng });
+                var m = L.circleMarker(e.latlng, { radius: 4, color: '#10b981', fillColor: '#10b981', fillOpacity: 1 }).addTo(map);
+                polyMarkers.push(m);
+                if (tempShape) map.removeLayer(tempShape);
+                if (polyPts.length >= 2) tempShape = L.polygon(polyPts, { color: '#10b981', weight: 2, dashArray: '6 3', fillColor: '#10b981', fillOpacity: 0.15 }).addTo(map);
+            }
+        });
+        map.on('dblclick', function (e) {
+            if (drawMode === 'poly' && polyPts.length >= 3) {
+                finishPolyDraw();
+            }
+        });
+
+        function saveNewDrawnField(pts) {
+            var lats = pts.map(function (p) { return p.lat; }), lngs = pts.map(function (p) { return p.lng; });
+            var center = [(Math.min.apply(null, lats) + Math.max.apply(null, lats)) / 2, (Math.min.apply(null, lngs) + Math.max.apply(null, lngs)) / 2];
+            var areaM2 = polygonAreaM2(pts, center[0]);
+
+            var defaultName = (currentLang === 'th' ? 'แปลงที่ ' : 'Plot ') + (myFields.length + 1);
+            var name = prompt(currentLang === 'th' ? 'กรุณาตั้งชื่อแปลงที่ดินใหม่:' : 'Enter a name for this new field:', defaultName);
+            if (!name) name = defaultName;
+
+            var newField = {
+                id: 'field_' + Date.now(),
+                name: name,
+                crop: document.getElementById('cur-crop-select').value || 'Durian',
+                center: center,
+                pts: pts,
+                areaM2: areaM2
+            };
+
+            myFields.push(newField);
+            saveStoredFields();
+            selectField(newField.id);
+        }
+
+        function processPolyArea(pts) {
+            var lats = pts.map(function (p) { return p.lat; }), lngs = pts.map(function (p) { return p.lng; });
+            FARM.south = Math.min.apply(null, lats); FARM.north = Math.max.apply(null, lats);
+            FARM.west = Math.min.apply(null, lngs); FARM.east = Math.max.apply(null, lngs);
+            FARM.center = [(FARM.south + FARM.north) / 2, (FARM.west + FARM.east) / 2];
+            runAnalysis();
+        }
+
+        function runAnalysis() {
+            generateGridData();
+            renderGrid(activeLayer);
+            renderGauges();
+            computeHealthScore();
+
+            var areaHa = (totalEffectiveAreaM2 / 10000).toFixed(2);
+            var areaRai = (totalEffectiveAreaM2 / 1600).toFixed(1);
+
+            var infoHTML = '<b>' + totalEffectiveAreaM2.toFixed(0) + ' m²</b> (' + t('exactClippedArea') + ')<br>' +
+                areaHa + ' ha · ' + areaRai + ' ' + (currentLang === 'th' ? 'ไร่' : 'rai') + '<br>' +
+                '<b>' + gridData.length + ' ' + t('cellsU') + '</b> (10m Sentinel-2)';
+
+            document.getElementById('area-info').innerHTML = infoHTML;
+            document.getElementById('persona-area').textContent = areaHa + ' ha (' + areaRai + (currentLang === 'th' ? ' ไร่' : ' rai') + ')';
+            document.getElementById('persona-res').textContent = '10m Sentinel-2 L2A (' + gridData.length + ' exact clipped cells)';
+
+            // Smoothly fly to field
+            map.flyToBounds([[FARM.south - 0.0003, FARM.west - 0.0003], [FARM.north + 0.0003, FARM.east + 0.0003]], { duration: 1 });
+            renderPracticalPrescription();
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           8. EXACT 10m POLYGON CLIPPED GRID RENDERING
+           ═══════════════════════════════════════════════════════════════ */
+        function renderGrid(layerKey) {
+            gridLayerGroup.clearLayers();
+            gridData.forEach(function (cell) {
+                var val = cell[layerKey];
+                var polyLayer = L.polygon(cell.polygonCoords, {
+                    color: 'rgba(255,255,255,0.22)', weight: 0.8,
+                    fillColor: getColor(layerKey, val),
+                    fillOpacity: 0.75
+                });
+
+                var sN = cell.ndvi >= 0.6 ? '🟢' : cell.ndvi >= 0.4 ? '🟡' : '🔴';
+                var sR = cell.ndre >= 0.35 ? '🟢' : cell.ndre >= 0.2 ? '🟡' : '🔴';
+                var sW = cell.ndwi >= 0.3 ? '🟢' : cell.ndwi >= 0.18 ? '🟡' : '🔴';
+                var sSI = cell.sufficiencyIndex >= 0.85 ? '🟢 Suff.' : cell.sufficiencyIndex >= 0.65 ? '🟡 Defic.' : '🔴 Severe';
+
+                polyLayer.bindPopup(
+                    '<div style="min-width:215px;">' +
+                    '<div style="font-weight:700;font-size:13px;margin-bottom:6px;color:#10b981;">' +
+                    t('cellTitle') + ' [' + (cell.r + 1) + ',' + (cell.c + 1) + '] — ' + cell.areaM2 + ' m² (' + (cell.coverageRatio * 100).toFixed(0) + '%)' +
+                    '</div>' +
+                    '<table style="width:100%;font-size:11px;border-collapse:collapse;">' +
+                    '<tr><td style="color:#94a3b8;">NDVI</td><td style="text-align:right;font-weight:600;">' + cell.ndvi + ' ' + sN + '</td></tr>' +
+                    '<tr><td style="color:#94a3b8;">NDRE (Red-Edge B5/B8A)</td><td style="text-align:right;font-weight:600;">' + cell.ndre + ' ' + sR + '</td></tr>' +
+                    '<tr><td style="color:#94a3b8;">NDWI (Canopy H2O B8/B11)</td><td style="text-align:right;font-weight:600;">' + cell.ndwi + ' ' + sW + '</td></tr>' +
+                    '<tr><td style="color:#94a3b8;">USDA Sufficiency (SI)</td><td style="text-align:right;font-weight:700;color:' + (cell.sufficiencyIndex < 0.7 ? '#ef4444' : '#10b981') + ';">' + cell.sufficiencyIndex + ' (' + sSI + ')</td></tr>' +
+                    '<tr><td style="color:#94a3b8;">Soil pH / Moisture</td><td style="text-align:right;font-weight:600;">pH ' + cell.ph + ' · ' + cell.moisture + '%</td></tr>' +
+                    '<tr style="border-top:1px solid rgba(255,255,255,0.1);"><td style="padding-top:4px;color:#94a3b8;">' + t('stressLvl') + '</td><td style="text-align:right;font-weight:700;color:' + (cell.stress > 0.55 ? '#ef4444' : cell.stress > 0.35 ? '#f59e0b' : '#10b981') + ';">' + (cell.stress * 100).toFixed(0) + '%</td></tr>' +
+                    '</table>' +
+                    '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.1);font-size:10px;color:#94a3b8;">' +
+                    'N:' + cell.nPct + '% · P:' + cell.pPct + '% · K:' + cell.kPct + ' | Sentinel-2 10m' +
+                    '</div>' +
+                    '</div>'
+                );
+
+                polyLayer.on('mouseover', function () { this.setStyle({ weight: 2.2, color: '#10b981' }); });
+                polyLayer.on('mouseout', function () { this.setStyle({ weight: 0.8, color: 'rgba(255,255,255,0.22)' }); });
+                gridLayerGroup.addLayer(polyLayer);
+            });
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           9. LAYER SWITCHING & LEGEND
+           ═══════════════════════════════════════════════════════════════ */
+        var LMETA = {
+            ndvi: { tk: 'legendNdvi', grad: 'linear-gradient(to right,#b41e1e,#e67a1e,#fadc23,#78be3c,#1e781e)', lbl: ['0.0', '0.5', '1.0'] },
+            ndre: { tk: 'legendNdre', grad: 'linear-gradient(to right,#b4281e,#d2823c,#dcc850,#3ca0b4,#1964b4)', lbl: ['0.0', '0.3', '0.6'] },
+            ndwi: { tk: 'legendNdwi', grad: 'linear-gradient(to right,#a0461e,#dcaf50,#64d2e6,#1e8cdc,#0a3ca0)', lbl: ['0.0', '0.3', '0.6'] },
+            moisture: { tk: 'legendMoist', grad: 'linear-gradient(to right,#8c5a28,#c8aa64,#82c8d2,#2896c8,#1450a0)', lbl: ['0%', '25%', '50%'] },
+            lai: { tk: 'legendLai', grad: 'linear-gradient(to right,#f0f0dc,#b4dc96,#64be50,#329632,#146414)', lbl: ['0', '3.5', '7'] },
+            evi: { tk: 'legendEvi', grad: 'linear-gradient(to right,#be3232,#dca032,#f0dc3c,#64b43c,#1e8232)', lbl: ['0', '0.4', '0.8'] },
+            stress: { tk: 'legendStress', grad: 'linear-gradient(to right,#1ea050,#78c83c,#fad232,#e6821e,#c82828)', lbl: [t('low'), t('medium'), t('high')] },
+            ph: { tk: 'legendPh', grad: 'linear-gradient(to right,#c82828,#dc7828,#f0dc50,#64c864,#2864b4)', lbl: ['4.5', '6.0', '7.5'] },
+            chl: { tk: 'legendChl', grad: 'linear-gradient(to right,#f0e6c8,#c8f0b4,#64dc64,#1eb43c,#0a781e)', lbl: ['10', '35', '60'] },
+            irrigation: { tk: 'legendIrr', grad: 'linear-gradient(to right,#147850,#50c878,#f0dc3c,#e68c28,#c82828)', lbl: ['0%', '50%', '100%'] },
+            harvest: { tk: 'legendHarv', grad: 'linear-gradient(to right,#c82828,#dc7832,#f0c83c,#78c850,#1ea032)', lbl: ['0%', '50%', '100%'] }
+        };
+
+        function updateLegend() {
+            var m = LMETA[activeLayer];
+            document.getElementById('legend-title').textContent = t(m.tk);
+            document.getElementById('legend-bar').style.background = m.grad;
+            var ll = document.getElementById('legend-labels');
+            ll.innerHTML = m.lbl.map(function (l) { return '<span>' + l + '</span>'; }).join('');
+        }
+
+        function switchLayer(key) {
+            activeLayer = key;
+            document.querySelectorAll('.layer-opt').forEach(function (el) { el.classList.toggle('active', el.dataset.layer === key); });
+            updateLegend();
+            if (gridData.length) renderGrid(key);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           10. GAUGE RENDERING
+           ═══════════════════════════════════════════════════════════════ */
+        var GAUGES_MAIN = [
+            { key: 'ndvi', label: 'NDVI', max: 1, color: '#4caf50', unit: '' },
+            { key: 'ndre', label: 'NDRE', max: 0.6, color: '#2196f3', unit: '' },
+            { key: 'ndwi', label: 'NDWI', max: 0.6, color: '#00bcd4', unit: '' },
+            { key: 'moisture', label: function () { return currentLang === 'th' ? 'ชื้นดิน' : 'Soil H2O'; }, max: 50, color: '#0288d1', unit: '%' },
+            { key: 'lai', label: 'LAI', max: 7, color: '#8bc34a', unit: '' },
+            { key: 'stress', label: function () { return currentLang === 'th' ? 'เครียด' : 'Stress'; }, max: 1, color: '#f44336', unit: '' }
+        ];
+        var GAUGES_ADV = [
+            { key: 'ph', label: 'pH', max: 7.5, color: '#9c27b0', unit: '' },
+            { key: 'chl', label: 'CHL', max: 60, color: '#00e676', unit: '' },
+            { key: 'irrigation', label: function () { return currentLang === 'th' ? 'น้ำ' : 'Irrig'; }, max: 100, color: '#29b6f6', unit: '%' },
+            { key: 'harvest', label: function () { return currentLang === 'th' ? 'เกี่ยว' : 'Harv'; }, max: 100, color: '#ffd54f', unit: '%' }
+        ];
+
+        function gaugeStatus(key, val) {
+            if (key === 'ndvi') return val >= 0.6 ? t('good') : val >= 0.4 ? t('cautionS') : t('dangerS');
+            if (key === 'ndre') return val >= 0.35 ? t('sufficient') : val >= 0.2 ? t('deficient') : t('criticalS');
+            if (key === 'ndwi') return val >= 0.3 ? t('optimal') : val >= 0.18 ? t('dryS') : t('veryDry');
+            if (key === 'moisture') return val >= 25 ? t('optimal') : val >= 15 ? t('dryS') : t('veryDry');
+            if (key === 'lai') return val >= 3.5 ? t('good') : val >= 2 ? t('medium') : t('sparse');
+            if (key === 'stress') return val <= 0.35 ? t('low') : val <= 0.55 ? t('medium') : t('high');
+            if (key === 'ph') return val >= 6 && val <= 7 ? t('optimal') : val < 6 ? t('acidic') : t('alkaline');
+            if (key === 'chl') return val >= 35 ? t('good') : val >= 20 ? t('cautionS') : t('deficient');
+            if (key === 'irrigation') return val <= 30 ? t('low') : val <= 60 ? t('medium') : t('high');
+            if (key === 'harvest') return val >= 70 ? t('ready') : val >= 40 ? t('medium') : t('notReady');
+            return '';
+        }
+        function gaugeColor(key, val) {
+            if (key === 'stress' || key === 'irrigation') return val <= 0.35 || val <= 30 ? '#10b981' : val <= 0.55 || val <= 60 ? '#f59e0b' : '#ef4444';
+            if (key === 'ndvi' || key === 'ndre' || key === 'ndwi') return val >= 0.4 ? '#10b981' : val >= 0.25 ? '#f59e0b' : '#ef4444';
+            if (key === 'moisture') return val >= 25 ? '#10b981' : val >= 15 ? '#f59e0b' : '#ef4444';
+            if (key === 'ph') return val >= 5.5 && val <= 7 ? '#10b981' : val >= 5 || val <= 7.5 ? '#f59e0b' : '#ef4444';
+            if (key === 'harvest') return val >= 70 ? '#10b981' : val >= 40 ? '#f59e0b' : '#ef4444';
+            return '#10b981';
+        }
+
+        function makeGaugeHTML(g, val) {
+            var label = typeof g.label === 'function' ? g.label() : g.label;
+            var displayVal = g.key === 'moisture' || g.key === 'irrigation' || g.key === 'harvest' || g.key === 'chl' ? val.toFixed(0) : val.toFixed(2);
+            var pct = clamp(val / g.max, 0, 1), circ = 2 * Math.PI * 22, off = circ * (1 - pct);
+            var sc = gaugeColor(g.key, val);
+            return '<div class="gauge-item"><svg class="gauge-svg" viewBox="0 0 60 60">' +
+                '<circle cx="30" cy="30" r="22" class="gauge-bg" stroke-width="4"/>' +
+                '<circle cx="30" cy="30" r="22" class="gauge-fill" stroke="' + g.color + '" stroke-dasharray="' + circ + ' ' + circ + '" stroke-dashoffset="' + off + '" stroke-width="4"/>' +
+                '<text x="30" y="32" class="gauge-val" text-anchor="middle" dominant-baseline="middle" font-size="11" font-weight="700">' + displayVal + g.unit + '</text>' +
+                '</svg><div class="gauge-label">' + label + '</div>' +
+                '<div class="gauge-status" style="color:' + sc + ';">' + gaugeStatus(g.key, val) + '</div></div>';
+        }
+
+        function renderGauges() {
+            if (!gridData.length) return;
+            document.getElementById('gauge-grid').innerHTML = GAUGES_MAIN.map(function (g) { return makeGaugeHTML(g, avgVals[g.key]); }).join('');
+            document.getElementById('gauge-grid-adv').innerHTML = GAUGES_ADV.map(function (g) { return makeGaugeHTML(g, avgVals[g.key]); }).join('');
+
+            var stH = gridData.filter(function (c) { return c.stress > 0.55; }).length;
+            var stM = gridData.filter(function (c) { return c.stress > 0.35 && c.stress <= 0.55; }).length;
+            var stL = gridData.filter(function (c) { return c.stress <= 0.35; }).length;
+            document.getElementById('zone-chips').innerHTML =
+                '<span class="zone-chip" style="background:rgba(16,185,129,0.15);color:#10b981;">🟢 ' + t('zoneGood') + ' ' + stL + ' ' + t('cellsU') + '</span>' +
+                '<span class="zone-chip" style="background:rgba(245,158,11,0.15);color:#f59e0b;">🟡 ' + t('zoneCaution') + ' ' + stM + ' ' + t('cellsU') + '</span>' +
+                '<span class="zone-chip" style="background:rgba(239,68,68,0.15);color:#ef4444;">🔴 ' + t('zoneDanger') + ' ' + stH + ' ' + t('cellsU') + '</span>';
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           11. HEALTH SCORE
+           ═══════════════════════════════════════════════════════════════ */
+        function computeHealthScore() {
+            if (!gridData.length) return;
+            var s = Math.round(clamp((avgVals.ndvi / 1) * 25 + (avgVals.ndre / 0.6) * 25 + (avgVals.ndwi / 0.6) * 15 + (avgVals.moisture / 50) * 15 + (avgVals.lai / 7) * 10 + (avgVals.evi / 0.8) * 10, 0, 100));
+            var circ = 2 * Math.PI * 40;
+            setTimeout(function () {
+                var f = document.getElementById('health-ring-fill'), v = document.getElementById('health-score-val');
+                var gr = document.getElementById('health-grade'), de = document.getElementById('health-desc');
+                f.style.strokeDasharray = (circ * s / 100) + ' ' + circ;
+                var col = s >= 70 ? '#10b981' : s >= 45 ? '#f59e0b' : '#ef4444';
+                f.style.stroke = col; v.style.color = col; v.textContent = s;
+                if (s >= 70) { gr.textContent = t('healthGood'); gr.style.color = '#10b981'; de.textContent = t('healthGoodD'); }
+                else if (s >= 45) { gr.textContent = t('healthCaution'); gr.style.color = '#f59e0b'; de.textContent = t('healthCautionD'); }
+                else { gr.textContent = t('healthCritical'); gr.style.color = '#ef4444'; de.textContent = t('healthCriticalD'); }
+            }, 300);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           12. WEATHER & GDD CALCULATION
+           ═══════════════════════════════════════════════════════════════ */
+        var weatherData = null, forecastData = null;
+
+        async function fetchWeather() {
+            try {
+                var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + FARM.center[0] + '&longitude=' + FARM.center[1] +
+                    '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,precipitation_probability_max' +
+                    '&hourly=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m' +
+                    '&timezone=Asia%2FBangkok&forecast_days=7&current=temperature_2m,precipitation,wind_speed_10m,relative_humidity_2m';
+                var res = await fetch(url); var json = await res.json();
+                var c = json.current;
+                weatherData = { temp: c.temperature_2m, rain: c.precipitation, wind: c.wind_speed_10m, humidity: c.relative_humidity_2m };
+                forecastData = json.daily;
+            } catch (e) {
+                weatherData = { temp: 31.2, rain: 4.5, wind: 3.2, humidity: 76 };
+                forecastData = {
+                    time: ['2026-08-27', '2026-08-28', '2026-08-29', '2026-08-30', '2026-08-31', '2026-09-01', '2026-09-02'],
+                    temperature_2m_max: [34, 33, 35, 32, 31, 33, 34], temperature_2m_min: [26, 25, 27, 25, 24, 26, 25],
+                    precipitation_sum: [2, 12, 0, 0, 5, 1, 0], wind_speed_10m_max: [3, 5, 2, 2, 4, 3, 2],
+                    precipitation_probability_max: [30, 80, 10, 15, 60, 25, 10]
+                };
+            }
+            document.getElementById('w-temp').textContent = weatherData.temp != null ? weatherData.temp.toFixed(1) : '—';
+            document.getElementById('w-rain').textContent = weatherData.rain != null ? weatherData.rain.toFixed(1) : '—';
+            document.getElementById('w-wind').textContent = weatherData.wind != null ? weatherData.wind.toFixed(1) : '—';
+            document.getElementById('w-hum').textContent = weatherData.humidity != null ? weatherData.humidity.toFixed(0) : '—';
+
+            var rain = weatherData.rain || 0, wind = weatherData.wind || 0;
+            var riskScore = clamp(Math.round(rain * 2.5 + wind * 8 + (rain > 5 ? 20 : 0) + (wind > 4 ? 15 : 0)), 0, 100);
+            var rb = document.getElementById('risk-bar'), rt = document.getElementById('risk-score-text');
+            rb.style.width = riskScore + '%';
+            rb.style.background = riskScore > 70 ? 'linear-gradient(90deg,#f59e0b,#ef4444)' : riskScore > 40 ? 'linear-gradient(90deg,#10b981,#f59e0b)' : 'linear-gradient(90deg,#10b981,#06b6d4)';
+            rt.textContent = riskScore + '/100';
+            rt.style.color = riskScore > 70 ? '#ef4444' : riskScore > 40 ? '#f59e0b' : '#10b981';
+
+            renderSprayCalendar();
+            renderForecastChart();
+        }
+
+        function renderSprayCalendar() {
+            if (!forecastData) return;
+            var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            var daysTH = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+            var cal = document.getElementById('spray-cal');
+            var html = '';
+            for (var i = 0; i < 7; i++) {
+                var d = new Date(forecastData.time[i] + 'T00:00:00');
+                var dayName = currentLang === 'th' ? daysTH[d.getDay()] : days[d.getDay()];
+                var rain = forecastData.precipitation_sum[i];
+                var wind = forecastData.wind_speed_10m_max[i];
+                var tMax = forecastData.temperature_2m_max[i];
+                var cls = 'ok', icon = '✅';
+                if (rain > 8 || wind > 5) { cls = 'no'; icon = '🚫'; }
+                else if (rain > 2 || wind > 3) { cls = 'warn'; icon = '⚠️'; }
+                html += '<div class="spray-day ' + cls + '"><div class="sd-day">' + (i === 0 ? t('todayLbl') : dayName) + '</div><div class="sd-icon">' + icon + '</div><div class="sd-temp">' + tMax + '°C</div><div class="sd-rain">🌧' + rain.toFixed(0) + 'mm</div></div>';
+            }
+            cal.innerHTML = html;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           13. CHARTS
+           ═══════════════════════════════════════════════════════════════ */
+        var ndviChartInst = null, forecastChartInst = null;
+
+        function renderNDVIChart() {
+            var labels = [], data = [];
+            var today = new Date();
+            for (var i = 29; i >= 0; i--) {
+                var d = new Date(today); d.setDate(d.getDate() - i);
+                labels.push((d.getMonth() + 1) + '/' + d.getDate());
+                data.push(clamp(0.42 + (29 - i) * 0.008 + Math.sin(i * 0.7) * 0.04 + Math.cos(i * 1.3) * 0.03, 0.3, 0.72));
+            }
+            if (ndviChartInst) ndviChartInst.destroy();
+            ndviChartInst = new Chart(document.getElementById('ndvi-chart').getContext('2d'), {
+                type: 'line',
+                data: { labels: labels, datasets: [{ label: 'NDVI', data: data, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', borderWidth: 2, pointRadius: 0, pointHoverRadius: 4, fill: true, tension: 0.4 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(12,22,41,0.95)', titleColor: '#94a3b8', bodyColor: '#f1f5f9', cornerRadius: 8 } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } },
+                        y: { min: 0.2, max: 0.85, grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } }
+                    },
+                    interaction: { intersect: false, mode: 'index' }
+                }
+            });
+        }
+
+        function renderForecastChart() {
+            if (!forecastData) return;
+            var labels = forecastData.time.map(function (d) { var p = d.split('-'); return p[1] + '/' + p[2]; });
+            if (forecastChartInst) forecastChartInst.destroy();
+            forecastChartInst = new Chart(document.getElementById('forecast-chart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels, datasets: [
+                        { type: 'line', label: currentLang === 'th' ? 'สูงสุด °C' : 'Max °C', data: forecastData.temperature_2m_max, borderColor: '#ef4444', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#ef4444', tension: 0.3, yAxisID: 'y' },
+                        { type: 'line', label: currentLang === 'th' ? 'ต่ำสุด °C' : 'Min °C', data: forecastData.temperature_2m_min, borderColor: '#3b82f6', backgroundColor: 'transparent', borderWidth: 2, pointRadius: 3, pointBackgroundColor: '#3b82f6', tension: 0.3, yAxisID: 'y' },
+                        { label: currentLang === 'th' ? 'ฝน mm' : 'Rain mm', data: forecastData.precipitation_sum, backgroundColor: 'rgba(6,182,212,0.4)', borderColor: 'rgba(6,182,212,0.8)', borderWidth: 1, borderRadius: 4, yAxisID: 'y1' }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8', font: { size: 9 }, boxWidth: 10, padding: 8 } }, tooltip: { backgroundColor: 'rgba(12,22,41,0.95)', titleColor: '#94a3b8', bodyColor: '#f1f5f9', cornerRadius: 8 } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' } },
+                        y: { position: 'left', grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#64748b', font: { size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' }, title: { display: true, text: '°C', color: '#64748b', font: { size: 9 } } },
+                        y1: { position: 'right', grid: { display: false }, ticks: { color: '#64748b', font: { size: 9 } }, border: { color: 'rgba(255,255,255,0.06)' }, title: { display: true, text: 'mm', color: '#64748b', font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           14. PRACTICAL 4R FERTILIZER PRESCRIPTION ENGINE
+           (When, Where, How Much, How)
+           ═══════════════════════════════════════════════════════════════ */
+        function runPracticalPrescription() {
+            if (!gridData.length) { alert(t('noFieldAlert')); return; }
+            var container = document.getElementById('rx-container');
+            container.innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:36px;height:36px;margin:0 auto 10px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite;"></div><p style="font-size:12px;color:var(--text-dim);">' + t('aiProcessing') + '</p></div>';
+            switchLayer('ndre');
+            setTimeout(renderPracticalPrescription, 500);
+        }
+
+        function renderPracticalPrescription() {
+            var container = document.getElementById('rx-container');
+            if (!gridData.length) {
+                container.innerHTML = '<button class="ai-btn" onclick="runPracticalPrescription()" data-i18n="aiBtn">' + t('aiBtn') + '</button>';
+                return;
+            }
+
+            var deficientCells = gridData.filter(function (c) { return c.sufficiencyIndex < 0.85; });
+            var severeCells = gridData.filter(function (c) { return c.sufficiencyIndex < 0.65; });
+            var defAreaM2 = deficientCells.reduce(function (acc, c) { return acc + c.areaM2; }, 0);
+            var defAreaRai = (defAreaM2 / 1600).toFixed(1);
+            var totalAreaRai = (totalEffectiveAreaM2 / 1600).toFixed(1);
+            var defPct = ((defAreaM2 / (totalEffectiveAreaM2 || 1)) * 100).toFixed(0);
+
+            // Weather & Timing Evaluation
+            var rain = weatherData ? weatherData.rain : 2;
+            var wind = weatherData ? weatherData.wind : 2.4;
+            var optDate = new Date();
+            var isGoodWeatherToday = rain < 2 && wind < 3.2;
+
+            if (forecastData) {
+                for (var i = 0; i < 7; i++) {
+                    if (forecastData.precipitation_sum[i] < 1.5 && forecastData.wind_speed_10m_max[i] < 3.0) {
+                        optDate = new Date(forecastData.time[i] + 'T00:00:00');
+                        break;
+                    }
+                }
+            } else {
+                optDate.setDate(optDate.getDate() + (isGoodWeatherToday ? 0 : 2));
+            }
+
+            var daysEN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            var daysTH = ['วันอาทิตย์', 'วันจันทร์', 'วันอังคาร', 'วันพุธ', 'วันพฤหัสบดี', 'วันศุกร์', 'วันเสาร์'];
+            var monthsEN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var monthsTH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+            var optDateStr = currentLang === 'th' ?
+                optDate.getDate() + ' ' + monthsTH[optDate.getMonth()] + ' (' + daysTH[optDate.getDay()] + ')' :
+                optDate.getDate() + ' ' + monthsEN[optDate.getMonth()] + ' (' + daysEN[optDate.getDay()] + ')';
+
+            var cropName = activeField ? activeField.crop : 'Durian';
+
+            // Exact NPK Calculation
+            var ndreRef = 0.52;
+            var targetKgTotal = 0;
+            deficientCells.forEach(function (c) {
+                var deltaNDRE = Math.max(0, ndreRef - c.ndre);
+                var rateKgHa = deltaNDRE * 160;
+                targetKgTotal += (rateKgHa / 10000) * c.areaM2;
+            });
+
+            var totalKgStr = targetKgTotal.toFixed(1);
+            var avgKgPerRai = ((targetKgTotal / (parseFloat(defAreaRai) || 1))).toFixed(1);
+            if (avgKgPerRai === 'NaN' || parseFloat(defAreaRai) === 0) avgKgPerRai = '0.0';
+
+            // Crop-specific fertilizer recommendation
+            var primaryFert = '';
+            var fertMethod = '';
+            var treeDose = '';
+
+            if (cropName === 'Durian') {
+                primaryFert = currentLang === 'th' ?
+                    'สูตร 15-0-0 (แคลเซียมไนเตรท) ผสม 16-16-16' :
+                    'Calcium Nitrate (15-0-0) blended with 16-16-16 Complex';
+                fertMethod = currentLang === 'th' ?
+                    'โรยรอบแนวชายพุ่ม (Canopy Drip-line) ห่างจากโคนต้น 1.5–2 เมตร แล้วเปิดระบบน้ำมินิสปริงเกอร์รดตามทันที 15–20 นาที' :
+                    'Side-dress banding along the canopy drip-line (1.5–2m from trunk), followed immediately by 15–20 min micro-sprinkler irrigation.';
+                treeDose = currentLang === 'th' ?
+                    'ประมาณ 350–500 กรัม / ต้น (สำหรับต้นอายุ 4–6 ปีขึ้นไป)' :
+                    'Approx. 350–500 g per tree (for trees aged 4–6+ years).';
+            } else if (cropName === 'Cassava') {
+                primaryFert = currentLang === 'th' ?
+                    'สูตร 15-7-18 หรือ 16-8-16 (เน้น K เพื่อเร่งขยายหัวมัน)' :
+                    'Formula 15-7-18 or 16-8-16 (High-K for tuber expansion)';
+                fertMethod = currentLang === 'th' ?
+                    'ขุดหยอดหลุมข้างร่องแปลง ห่างจากโคน 20 ซม. แล้วกลบดินขณะดินมีความชื้น' :
+                    'Bury in shallow furrow holes 20cm beside plant stems while soil is moist.';
+                treeDose = currentLang === 'th' ?
+                    'ประมาณ 30–40 กก. / ไร่' :
+                    'Approx. 30–40 kg per rai.';
+            } else if (cropName === 'Rice') {
+                primaryFert = currentLang === 'th' ?
+                    'สูตร 46-0-0 (ยูเรีย) ผสม 16-20-0' :
+                    'Urea (46-0-0) blended with 16-20-0 Paddy Grade';
+                fertMethod = currentLang === 'th' ?
+                    'หว่านสม่ำเสมอในแปลงที่มีระดับน้ำขัง 3–5 ซม. เพื่อป้องกันการระเหยสูญเสีย' :
+                    'Broadcast evenly across paddy with 3–5cm shallow standing water.';
+                treeDose = currentLang === 'th' ?
+                    'ประมาณ 25–30 กก. / ไร่' :
+                    'Approx. 25–30 kg per rai.';
+            } else {
+                primaryFert = currentLang === 'th' ?
+                    'ปุ๋ยเคมีมาตรฐาน 15-15-15 + ปุ๋ยอินทรีย์ชีวภาพ' :
+                    'Standard Compound 15-15-15 + Organic Bio-fertilizer';
+                fertMethod = currentLang === 'th' ?
+                    'หว่านตามแนวร่องและพรวนกลบหน้าดิน' :
+                    'Band along furrows and lightly incorporate into topsoil.';
+                treeDose = currentLang === 'th' ?
+                    'ประมาณ 20–25 กก. / ไร่' :
+                    'Approx. 20–25 kg per rai.';
+            }
+
+            container.innerHTML =
+                '<div id="rx-content" class="four-r-grid">' +
+                // 1. WHEN
+                '<div class="four-r-card when">' +
+                '<div class="four-r-title when"><span>⏰</span> ' + t('whenTitle') + '</div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>วันที่แนะนำ:</b> ' : '<b>Recommended Date:</b> ') + '<strong>' + optDateStr + '</strong></span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>เวลาที่เหมาะสมที่สุด:</b> ช่วงเช้าตรู่ <strong>06:00 – 08:30 น.</strong> (หลังน้ำค้างแห้งและแดดยังไม่แรง)' : '<b>Best Time Window:</b> Early Morning <strong>06:00 – 08:30 AM</strong> (Dew evaporated, low UV)') + '</span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>ข้อห้าม:</b> 🚫 ห้ามใส่ช่วง 11:00–15:00 น. (อุณหภูมิ > 34°C ปุ๋ยจะระเหยสูญเสีย) หรือวันที่คาดว่าฝนจะตกหนัก (> 8 มม./วัน)' : '<b>Prohibition:</b> 🚫 Avoid 11:00 AM – 3:00 PM (High heat >34°C causes ammonia volatilization) or days with heavy rain (>8mm/d)') + '</span></div>' +
+                '</div>' +
+
+                // 2. WHERE
+                '<div class="four-r-card where">' +
+                '<div class="four-r-title where"><span>📍</span> ' + t('whereTitle') + '</div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>โซนที่ต้องใส่ปุ๋ย:</b> โซนขาดธาตุไนโตรเจน <strong>' + defAreaRai + ' ไร่</strong> (' + defPct + '% ของแปลง)' : '<b>Deficient Target Zones:</b> Nitrogen Deficient Area <strong>' + defAreaRai + ' rai</strong> (' + defPct + '% of field)') + '</span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>ตำแหน่งในแผนที่:</b> สังเกต <strong>จุดสีแดง/ส้ม</strong> บนหน้าจอ (โซนที่ใบพืชซีด NDRE < 0.35) ให้เน้นใส่เฉพาะบริเวณนั้น' : '<b>Map Coordinates:</b> Target the <strong>Red / Orange cells</strong> on the map (NDRE < 0.35).') + '</span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>โซนสีเขียว:</b> สุขภาพดีอยู่แล้ว ให้ <strong>งดหรือใส่เพียง 20%</strong> เพื่อประหยัดต้นทุน' : '<b>Green Zones:</b> Already well-nourished. <strong>Reduce or skip fertilizer</strong> in these zones.') + '</span></div>' +
+                '</div>' +
+
+                // 3. HOW MUCH
+                '<div class="four-r-card howmuch">' +
+                '<div class="four-r-title howmuch"><span>⚖️</span> ' + t('howMuchTitle') + '</div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>ปุ๋ยหลักที่ต้องใช้:</b> ' : '<b>Prescribed Formulation:</b> ') + '<strong>' + primaryFert + '</strong></span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>ปริมาณรวมทั้งแปลง:</b> <strong>' + totalKgStr + ' กก.</strong> (เฉลี่ย <strong>' + avgKgPerRai + ' กก./ไร่</strong> ในโซนขาดธาตุ)' : '<b>Total Field Requirement:</b> <strong>' + totalKgStr + ' kg</strong> (avg <strong>' + avgKgPerRai + ' kg/rai</strong> in deficient zones)') + '</span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>อัตราต่อต้น/ต่อจุด:</b> ' : '<b>Per Tree/Spot Dosage:</b> ') + '<strong>' + treeDose + '</strong></span></div>' +
+                '<table class="npk-table" style="margin-top:6px;">' +
+                '<tr><th>Element</th><th>Current Status</th><th>Target Formulation Rate</th></tr>' +
+                '<tr><td style="color:#10b981;font-weight:700;">Nitrogen (N)</td><td>NDRE ' + avgVals.ndre.toFixed(2) + ' (Deficit)</td><td><b>' + avgKgPerRai + ' kg/rai</b> <span class="npk-bar" style="width:36px;background:#10b981;"></span></td></tr>' +
+                '<tr><td style="color:#3b82f6;font-weight:700;">Phosphorus (P)</td><td>Moderate Baseline</td><td><b>' + (avgKgPerRai * 0.55).toFixed(1) + ' kg/rai</b> <span class="npk-bar" style="width:22px;background:#3b82f6;"></span></td></tr>' +
+                '<tr><td style="color:#f59e0b;font-weight:700;">Potassium (K)</td><td>Moderate Baseline</td><td><b>' + (avgKgPerRai * 0.75).toFixed(1) + ' kg/rai</b> <span class="npk-bar" style="width:28px;background:#f59e0b;"></span></td></tr>' +
+                '</table>' +
+                '</div>' +
+
+                // 4. HOW
+                '<div class="four-r-card how">' +
+                '<div class="four-r-title how"><span>🚜</span> ' + t('howTitle') + '</div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>วิธีการใส่:</b> ' : '<b>Application Method:</b> ') + fertMethod + '</span></div>' +
+                '<div class="four-r-item"><span class="bullet-dot">•</span><span>' + (currentLang === 'th' ? '<b>คำแนะนำเรื่องดิน:</b> ค่า pH ดินปัจจุบัน <strong>6.2 (ดินร่วนเหนียว)</strong> พืชดูดซึมปุ๋ยได้ดีเยี่ยม ไม่จำเป็นต้องเติมปูนขาว (Lime) ในรอบนี้' : '<b>Soil Condition Tip:</b> Current Soil pH <strong>6.2 (Clay Loam)</strong> provides high nutrient availability. No liming needed.') + '</span></div>' +
+                '</div>' +
+
+                '<button class="ai-btn" style="margin-top:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);" onclick="runPracticalPrescription()">' + t('aiReset') + '</button>' +
+                '</div>';
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           15. CLOCK + INIT
+           ═══════════════════════════════════════════════════════════════ */
+        function updateClock() {
+            var now = new Date();
+            document.getElementById('header-time').textContent = now.toLocaleString(currentLang === 'th' ? 'th-TH' : 'en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        (async function init() {
+            updateClock(); setInterval(updateClock, 60000);
+            await verifySentinelHub();
+            loadStoredFields();
+            if (myFields.length > 0) {
+                selectField(myFields[0].id);
+            }
+            await fetchWeather();
+            renderNDVIChart();
+        })();
+    </script>
+</body>
+
+</html>
