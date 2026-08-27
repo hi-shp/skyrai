@@ -1602,20 +1602,15 @@
                 var raw = localStorage.getItem('skyrai_user_fields');
                 if (raw) {
                     var parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed) && parsed.length >= 4) {
+                    if (Array.isArray(parsed) && parsed.length > 0) {
                         myFields = parsed;
-                    } else {
-                        // Ensure all 4 preset fields are always present
-                        myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
-                        saveStoredFields();
+                        return;
                     }
-                } else {
-                    myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
-                    saveStoredFields();
                 }
-            } catch (e) {
-                myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
-            }
+            } catch (e) { }
+
+            // Only load fallback presets if storage is completely empty
+            myFields = JSON.parse(JSON.stringify(DEFAULT_PRESET_FIELDS));
         }
 
         function saveStoredFields() {
