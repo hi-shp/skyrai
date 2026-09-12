@@ -2254,7 +2254,7 @@
             return 'rgb(' + multiGrad(cm.stops, t).join(',') + ')';
         }
 
-        var map = L.map('map', { zoomControl: true, doubleClickZoom: false, maxZoom: 20 }).setView(FARM.center, 16);
+        var map = L.map('map', { zoomControl: true, doubleClickZoom: false, maxZoom: 20 }).setView(FARM.center, 15);
         var basemaps = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Sentinel Hub / Sentinel-2 L2A / Esri', maxZoom: 20 }),
             osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }),
