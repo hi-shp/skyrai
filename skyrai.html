@@ -1236,13 +1236,15 @@
 
     <header>
         <div class="logo">
-            <div class="logo-icon" style="background:#ffffff;padding:3px;box-shadow:0 0 16px rgba(69,91,11,0.3);border:1px solid rgba(69,91,11,0.4);">
+            <div class="logo-icon"
+                style="background:#ffffff;padding:3px;box-shadow:0 0 16px rgba(69,91,11,0.3);border:1px solid rgba(69,91,11,0.4);">
                 <img src="/logo.png" alt="SKYRAI" style="width:100%;height:100%;object-fit:contain;display:block;">
             </div>
             <h1>SKYRAI<span data-i18n="appSubtitle">Sentinel Hub Precision Agriculture (Sentinel-2 10m)</span></h1>
         </div>
         <div class="header-right">
-            <a href="/dashboard.html" class="nav-dashboard-link" style="display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.35);padding:6px 12px;border-radius:12px;text-decoration:none;font-size:11px;font-weight:700;transition:all 0.2s;">
+            <a href="/dashboard.html" class="nav-dashboard-link"
+                style="display:flex;align-items:center;gap:6px;background:rgba(16,185,129,0.15);color:var(--green);border:1px solid rgba(16,185,129,0.35);padding:6px 12px;border-radius:12px;text-decoration:none;font-size:11px;font-weight:700;transition:all 0.2s;">
                 <span>📊</span>
                 <span>Executive Dashboard</span>
             </a>
@@ -1272,15 +1274,18 @@
                 <button class="map-3d-btn" id="btn-tilt-0" onclick="set3DTiltAngle(0)"><span>2D Top</span></button>
                 <button class="map-3d-btn" id="btn-tilt-30" onclick="set3DTiltAngle(30)"><span>30°</span></button>
                 <button class="map-3d-btn" id="btn-tilt-45" onclick="set3DTiltAngle(45)"><span>45° 3D</span></button>
-                <button class="map-3d-btn" id="btn-tilt-60" onclick="set3DTiltAngle(60)"><span>60° Horizon</span></button>
-                
+                <button class="map-3d-btn" id="btn-tilt-60" onclick="set3DTiltAngle(60)"><span>60°
+                        Horizon</span></button>
+
                 <div class="tilt-slider-wrap">
                     <span style="font-size:10px;color:var(--cyan);font-weight:700;">📐</span>
-                    <input type="range" class="tilt-slider" id="tilt-slider" min="0" max="65" value="0" oninput="onTiltSliderChange(this.value)">
+                    <input type="range" class="tilt-slider" id="tilt-slider" min="0" max="65" value="0"
+                        oninput="onTiltSliderChange(this.value)">
                     <span class="tilt-badge" id="tilt-angle-badge">0°</span>
                 </div>
-                
-                <div class="tilt-hint" title="Right-click & drag or Shift+Wheel to tilt">🖱️ <span>Shift+Wheel / Right-Drag</span></div>
+
+                <div class="tilt-hint" title="Right-click & drag or Shift+Wheel to tilt">🖱️ <span>Shift+Wheel /
+                        Right-Drag</span></div>
             </div>
 
             <!-- Left Field Manager & Draw Tools -->
@@ -1306,14 +1311,18 @@
                 <div class="panel-box" id="panel-fields">
                     <div class="collapsible-header" onclick="toggleCollapse('panel-fields')">
                         <h4><span data-i18n="myFields">🏞️ MY FIELDS</span> <span id="field-count"
-                                style="font-size:9px;color:var(--cyan);font-weight:700;margin-left:4px;">0 fields</span></h4>
+                                style="font-size:9px;color:var(--cyan);font-weight:700;margin-left:4px;">0 fields</span>
+                        </h4>
                         <span class="chevron" id="chev-fields">▼</span>
                     </div>
                     <div class="collapsible-body" id="body-fields">
                         <div class="field-list" id="field-list"></div>
                         <button class="draw-btn add" style="margin-top:8px;" onclick="promptNewField()">➕ <span
                                 data-i18n="addNewField">Add New Field</span></button>
-                        <button class="draw-btn" style="margin-top:6px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.4);color:var(--cyan);font-size:11px;" onclick="manualBakeFields()">💾 <span data-i18n="bakeCodeBtn">Save Plots Permanently to Code</span></button>
+                        <button class="draw-btn"
+                            style="margin-top:6px;background:rgba(6,182,212,0.15);border:1px solid rgba(6,182,212,0.4);color:var(--cyan);font-size:11px;"
+                            onclick="manualBakeFields()">💾 <span data-i18n="bakeCodeBtn">Save Plots Permanently to
+                                Code</span></button>
                     </div>
                 </div>
             </div>
@@ -1325,15 +1334,18 @@
                     <span class="chevron" id="chev-layers">▼</span>
                 </div>
                 <div class="collapsible-body" id="body-layers">
-                    <div class="layer-opt active" data-layer="ndvi" onclick="switchLayer('ndvi')"><span class="layer-dot"
-                            style="background:#4caf50;"></span><span data-i18n="ndvi">NDVI Vegetation</span></div>
+                    <div class="layer-opt active" data-layer="ndvi" onclick="switchLayer('ndvi')"><span
+                            class="layer-dot" style="background:#4caf50;"></span><span data-i18n="ndvi">NDVI
+                            Vegetation</span></div>
                     <div class="layer-opt" data-layer="ndre" onclick="switchLayer('ndre')"><span class="layer-dot"
-                            style="background:#2196f3;"></span><span data-i18n="ndre">NDRE Nitrogen (B5/B8A)</span></div>
+                            style="background:#2196f3;"></span><span data-i18n="ndre">NDRE Nitrogen (B5/B8A)</span>
+                    </div>
                     <div class="layer-opt" data-layer="ndwi" onclick="switchLayer('ndwi')"><span class="layer-dot"
                             style="background:#00bcd4;"></span><span data-i18n="ndwi">NDWI Leaf Moisture (B8/B11)</span>
                     </div>
-                    <div class="layer-opt" data-layer="moisture" onclick="switchLayer('moisture')"><span class="layer-dot"
-                            style="background:#0288d1;"></span><span data-i18n="moisture">Soil Moisture</span></div>
+                    <div class="layer-opt" data-layer="moisture" onclick="switchLayer('moisture')"><span
+                            class="layer-dot" style="background:#0288d1;"></span><span data-i18n="moisture">Soil
+                            Moisture</span></div>
                     <div class="layer-opt" data-layer="lai" onclick="switchLayer('lai')"><span class="layer-dot"
                             style="background:#8bc34a;"></span><span data-i18n="lai">LAI Leaf Area</span></div>
                     <div class="layer-opt" data-layer="evi" onclick="switchLayer('evi')"><span class="layer-dot"
@@ -1372,7 +1384,8 @@
         <div class="dashboard">
             <!-- 1. Active Field Meta -->
             <div class="card">
-                <div class="card-header"><span style="color:var(--cyan);">🌱</span> <span data-i18n="activeFieldTitle">ACTIVE FIELD PROFILE</span>
+                <div class="card-header"><span style="color:var(--cyan);">🌱</span> <span
+                        data-i18n="activeFieldTitle">ACTIVE FIELD PROFILE</span>
                 </div>
                 <div class="persona-row"><span class="persona-label" data-i18n="fieldName">Field Name</span><span
                         class="persona-value" id="cur-field-name">—</span></div>
@@ -1770,202 +1783,202 @@
            ═══════════════════════════════════════════════════════════════ */
         var DEFAULT_PRESET_FIELDS = [
             {
-                        "id": "field_1787824027764",
-                        "name": "Plot 1",
-                        "crop": "Rice",
-                        "center": [
-                                    15.529869232989775,
-                                    99.62158249109072
-                        ],
-                        "pts": [
-                                    {
-                                                "lat": 15.53151737696997,
-                                                "lng": 99.62113736339506
-                                    },
-                                    {
-                                                "lat": 15.531176384107582,
-                                                "lng": 99.62087994014936
-                                    },
-                                    {
-                                                "lat": 15.530907722667225,
-                                                "lng": 99.62031146381516
-                                    },
-                                    {
-                                                "lat": 15.530277400221475,
-                                                "lng": 99.61997895878947
-                                    },
-                                    {
-                                                "lat": 15.529884739363089,
-                                                "lng": 99.61996823282092
-                                    },
-                                    {
-                                                "lat": 15.529740074647812,
-                                                "lng": 99.62024710800374
-                                    },
-                                    {
-                                                "lat": 15.529368079199624,
-                                                "lng": 99.6201183963809
-                                    },
-                                    {
-                                                "lat": 15.528965083373398,
-                                                "lng": 99.6201827521923
-                                    },
-                                    {
-                                                "lat": 15.528675752550894,
-                                                "lng": 99.62048307931228
-                                    },
-                                    {
-                                                "lat": 15.52822108900958,
-                                                "lng": 99.62211342653494
-                                    },
-                                    {
-                                                "lat": 15.529512744175896,
-                                                "lng": 99.622810614492
-                                    },
-                                    {
-                                                "lat": 15.530101736245669,
-                                                "lng": 99.6231967493605
-                                    }
-                        ],
-                        "areaM2": 78361.86865386357
+                "id": "field_1787824027764",
+                "name": "Plot 1",
+                "crop": "Rice",
+                "center": [
+                    15.529869232989775,
+                    99.62158249109072
+                ],
+                "pts": [
+                    {
+                        "lat": 15.53151737696997,
+                        "lng": 99.62113736339506
+                    },
+                    {
+                        "lat": 15.531176384107582,
+                        "lng": 99.62087994014936
+                    },
+                    {
+                        "lat": 15.530907722667225,
+                        "lng": 99.62031146381516
+                    },
+                    {
+                        "lat": 15.530277400221475,
+                        "lng": 99.61997895878947
+                    },
+                    {
+                        "lat": 15.529884739363089,
+                        "lng": 99.61996823282092
+                    },
+                    {
+                        "lat": 15.529740074647812,
+                        "lng": 99.62024710800374
+                    },
+                    {
+                        "lat": 15.529368079199624,
+                        "lng": 99.6201183963809
+                    },
+                    {
+                        "lat": 15.528965083373398,
+                        "lng": 99.6201827521923
+                    },
+                    {
+                        "lat": 15.528675752550894,
+                        "lng": 99.62048307931228
+                    },
+                    {
+                        "lat": 15.52822108900958,
+                        "lng": 99.62211342653494
+                    },
+                    {
+                        "lat": 15.529512744175896,
+                        "lng": 99.622810614492
+                    },
+                    {
+                        "lat": 15.530101736245669,
+                        "lng": 99.6231967493605
+                    }
+                ],
+                "areaM2": 78361.86865386357
             },
             {
-                        "id": "field_1787824268758",
-                        "name": "Plot 2",
-                        "crop": "Mango",
-                        "center": [
-                                    15.531666726208766,
-                                    99.62256822783054
-                        ],
-                        "pts": [
-                                    {
-                                                "lat": 15.533201191708747,
-                                                "lng": 99.62289536987194
-                                    },
-                                    {
-                                                "lat": 15.532457212631208,
-                                                "lng": 99.62225181175775
-                                    },
-                                    {
-                                                "lat": 15.531914726194472,
-                                                "lng": 99.6214688160521
-                                    },
-                                    {
-                                                "lat": 15.53171323086866,
-                                                "lng": 99.62129720055498
-                                    },
-                                    {
-                                                "lat": 15.531578900542067,
-                                                "lng": 99.62116848893213
-                                    },
-                                    {
-                                                "lat": 15.530132260708784,
-                                                "lng": 99.62325468981908
-                                    },
-                                    {
-                                                "lat": 15.531093244015599,
-                                                "lng": 99.62396796672896
-                                    },
-                                    {
-                                                "lat": 15.53294286594445,
-                                                "lng": 99.62331904563047
-                                    },
-                                    {
-                                                "lat": 15.533134027041179,
-                                                "lng": 99.62317424505478
-                                    },
-                                    {
-                                                "lat": 15.533201191708747,
-                                                "lng": 99.62305089641622
-                                    }
-                        ],
-                        "areaM2": 53083.6021172187
+                "id": "field_1787824268758",
+                "name": "Plot 2",
+                "crop": "Mango",
+                "center": [
+                    15.531666726208766,
+                    99.62256822783054
+                ],
+                "pts": [
+                    {
+                        "lat": 15.533201191708747,
+                        "lng": 99.62289536987194
+                    },
+                    {
+                        "lat": 15.532457212631208,
+                        "lng": 99.62225181175775
+                    },
+                    {
+                        "lat": 15.531914726194472,
+                        "lng": 99.6214688160521
+                    },
+                    {
+                        "lat": 15.53171323086866,
+                        "lng": 99.62129720055498
+                    },
+                    {
+                        "lat": 15.531578900542067,
+                        "lng": 99.62116848893213
+                    },
+                    {
+                        "lat": 15.530132260708784,
+                        "lng": 99.62325468981908
+                    },
+                    {
+                        "lat": 15.531093244015599,
+                        "lng": 99.62396796672896
+                    },
+                    {
+                        "lat": 15.53294286594445,
+                        "lng": 99.62331904563047
+                    },
+                    {
+                        "lat": 15.533134027041179,
+                        "lng": 99.62317424505478
+                    },
+                    {
+                        "lat": 15.533201191708747,
+                        "lng": 99.62305089641622
+                    }
+                ],
+                "areaM2": 53083.6021172187
             },
             {
-                        "id": "field_1787824091709",
-                        "name": "Plot 3",
-                        "crop": "Mango",
-                        "center": [
-                                    15.529827018764227,
-                                    99.6244491380956
-                        ],
-                        "pts": [
-                                    {
-                                                "lat": 15.530986919702595,
-                                                "lng": 99.62403886979781
-                                    },
-                                    {
-                                                "lat": 15.53089392146587,
-                                                "lng": 99.62392624712783
-                                    },
-                                    {
-                                                "lat": 15.529767606157206,
-                                                "lng": 99.62312179948503
-                                    },
-                                    {
-                                                "lat": 15.529106280540269,
-                                                "lng": 99.62406032173492
-                                    },
-                                    {
-                                                "lat": 15.52866711782586,
-                                                "lng": 99.62476287267626
-                                    },
-                                    {
-                                                "lat": 15.529963936791411,
-                                                "lng": 99.62577647670618
-                                    },
-                                    {
-                                                "lat": 15.530955920295023,
-                                                "lng": 99.6242962930435
-                                    }
-                        ],
-                        "areaM2": 39260.53681853298
+                "id": "field_1787824091709",
+                "name": "Plot 3",
+                "crop": "Mango",
+                "center": [
+                    15.529827018764227,
+                    99.6244491380956
+                ],
+                "pts": [
+                    {
+                        "lat": 15.530986919702595,
+                        "lng": 99.62403886979781
+                    },
+                    {
+                        "lat": 15.53089392146587,
+                        "lng": 99.62392624712783
+                    },
+                    {
+                        "lat": 15.529767606157206,
+                        "lng": 99.62312179948503
+                    },
+                    {
+                        "lat": 15.529106280540269,
+                        "lng": 99.62406032173492
+                    },
+                    {
+                        "lat": 15.52866711782586,
+                        "lng": 99.62476287267626
+                    },
+                    {
+                        "lat": 15.529963936791411,
+                        "lng": 99.62577647670618
+                    },
+                    {
+                        "lat": 15.530955920295023,
+                        "lng": 99.6242962930435
+                    }
+                ],
+                "areaM2": 39260.53681853298
             },
             {
-                        "id": "field_1787824122564",
-                        "name": "Plot 4",
-                        "crop": "Mango",
-                        "center": [
-                                    15.528739284502445,
-                                    99.62350789994369
-                        ],
-                        "pts": [
-                                    {
-                                                "lat": 15.529715776412576,
-                                                "lng": 99.62309495015377
-                                    },
-                                    {
-                                                "lat": 15.529540111958287,
-                                                "lng": 99.62288043078235
-                                    },
-                                    {
-                                                "lat": 15.529214615662168,
-                                                "lng": 99.6227463561752
-                                    },
-                                    {
-                                                "lat": 15.528196790595317,
-                                                "lng": 99.62226368758955
-                                    },
-                                    {
-                                                "lat": 15.528124457658258,
-                                                "lng": 99.6222851395267
-                                    },
-                                    {
-                                                "lat": 15.527850625595194,
-                                                "lng": 99.62311103910662
-                                    },
-                                    {
-                                                "lat": 15.527762792592313,
-                                                "lng": 99.6240817392622
-                                    },
-                                    {
-                                                "lat": 15.52862045443151,
-                                                "lng": 99.62475211229784
-                                    }
-                        ],
-                        "areaM2": 34145.054398602835
+                "id": "field_1787824122564",
+                "name": "Plot 4",
+                "crop": "Mango",
+                "center": [
+                    15.528739284502445,
+                    99.62350789994369
+                ],
+                "pts": [
+                    {
+                        "lat": 15.529715776412576,
+                        "lng": 99.62309495015377
+                    },
+                    {
+                        "lat": 15.529540111958287,
+                        "lng": 99.62288043078235
+                    },
+                    {
+                        "lat": 15.529214615662168,
+                        "lng": 99.6227463561752
+                    },
+                    {
+                        "lat": 15.528196790595317,
+                        "lng": 99.62226368758955
+                    },
+                    {
+                        "lat": 15.528124457658258,
+                        "lng": 99.6222851395267
+                    },
+                    {
+                        "lat": 15.527850625595194,
+                        "lng": 99.62311103910662
+                    },
+                    {
+                        "lat": 15.527762792592313,
+                        "lng": 99.6240817392622
+                    },
+                    {
+                        "lat": 15.52862045443151,
+                        "lng": 99.62475211229784
+                    }
+                ],
+                "areaM2": 34145.054398602835
             }
-];
+        ];
 
         var myFields = [];
         var activeField = null;
@@ -2254,7 +2267,7 @@
             return 'rgb(' + multiGrad(cm.stops, t).join(',') + ')';
         }
 
-        var map = L.map('map', { zoomControl: true, doubleClickZoom: false, maxZoom: 20 }).setView(FARM.center, 15);
+        var map = L.map('map', { zoomControl: true, doubleClickZoom: false, maxZoom: 20 }).setView(FARM.center, 14);
         var basemaps = {
             sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '&copy; Sentinel Hub / Sentinel-2 L2A / Esri', maxZoom: 20 }),
             osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 19 }),
